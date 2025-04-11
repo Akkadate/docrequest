@@ -1,0 +1,64 @@
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <img src="/images/logo.png" alt="มหาวิทยาลัยนอร์กรุงเทพ" width="30" height="30" class="d-inline-block align-top me-2">
+      ระบบขอเอกสารออนไลน์
+    </a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain" aria-controls="navbarMain" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarMain">
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        <% if (user) { %>
+          <% if (user.isStaff) { %>
+            <!-- เมนูสำหรับเจ้าหน้าที่ -->
+            <li class="nav-item">
+              <a class="nav-link <%= currentPath === '/admin/dashboard' ? 'active' : '' %>" href="/admin/dashboard">แดชบอร์ด</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link <%= currentPath === '/admin/requests' ? 'active' : '' %>" href="/admin/requests">จัดการคำขอ</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link <%= currentPath === '/admin/students' ? 'active' : '' %>" href="/admin/students">จัดการนักศึกษา</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link <%= currentPath === '/admin/reports' ? 'active' : '' %>" href="/admin/reports">รายงาน</a>
+            </li>
+          <% } else { %>
+            <!-- เมนูสำหรับนักศึกษา -->
+            <li class="nav-item">
+              <a class="nav-link <%= currentPath === '/student/main-menu' ? 'active' : '' %>" href="/student/main-menu">หน้าหลัก</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link <%= currentPath === '/student/select-document' ? 'active' : '' %>" href="/student/select-document">ขอเอกสาร</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link <%= currentPath === '/student/document-history' ? 'active' : '' %>" href="/student/document-history">ประวัติการขอเอกสาร</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link <%= currentPath === '/student/track-status' ? 'active' : '' %>" href="/student/track-status">ติดตามสถานะ</a>
+            </li>
+          <% } %>
+        <% } %>
+      </ul>
+      <ul class="navbar-nav">
+        <% if (user) { %>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+              <i class="fas fa-user-circle me-1"></i> <%= user.first_name %> <%= user.last_name %>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+              <li><a class="dropdown-item" href="<%= user.isStaff ? '/admin/profile' : '/student/profile' %>"><i class="fas fa-user me-2"></i> โปรไฟล์</a></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item" href="/logout"><i class="fas fa-sign-out-alt me-2"></i> ออกจากระบบ</a></li>
+            </ul>
+          </li>
+        <% } else { %>
+          <li class="nav-item">
+            <a class="nav-link" href="/login"><i class="fas fa-sign-in-alt me-1"></i> เข้าสู่ระบบ</a>
+          </li>
+        <% } %>
+      </ul>
+    </div>
+  </div>
+</nav>
