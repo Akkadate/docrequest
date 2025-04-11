@@ -12,9 +12,9 @@ async function resetStudentPassword() {
     );
     
     if (result.rows.length > 0) {
-      console.log('Admin password updated successfully');
+      console.log('Student password updated successfully');
     } else {
-      console.log('Admin user not found');
+      console.log('Student user not found');
     }
   } catch (error) {
     console.error('Error updating admin password:', error);
