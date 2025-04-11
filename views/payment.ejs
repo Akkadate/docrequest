@@ -1,0 +1,178 @@
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <!-- ส่วนหัว -->
+      <div class="d-flex align-items-center justify-content-between mb-4">
+        <h2><i class="fas fa-credit-card me-2"></i> ชำระเงิน</h2>
+        <a href="/student/track-status?ref=<%= request.reference %>" class="btn btn-outline-secondary">
+          <i class="fas fa-arrow-left me-2"></i> กลับไปหน้าสถานะคำขอ
+        </a>
+      </div>
+      
+      <!-- ข้อมูลคำขอและค่าธรรมเนียม -->
+      <div class="card shadow-sm mb-4">
+        <div class="card-header bg-light">
+          <h4 class="card-title mb-0">ข้อมูลค่าธรรมเนียม</h4>
+        </div>
+        <div class="card-body">
+          <div class="row mb-4">
+            <div class="col-md-6">
+              <p><strong>เลขที่อ้างอิง:</strong> <%= request.reference %></p>
+              <p><strong>ประเภทเอกสาร:</strong> <%= request.documentTypeThai %></p>
+              <p><strong>จำนวน:</strong> <%= request.copies %> ฉบับ</p>
+            </div>
+            <div class="col-md-6">
+              <p><strong>วันที่ขอ:</strong> <%= request.createdAtThai %></p>
+              <p><strong>สถานะ:</strong> <span class="badge bg-warning text-dark"><%= request.statusThai %></span></p>
+              <p><strong>วิธีรับเอกสาร:</strong> <%= request.deliveryMethodThai %></p>
+            </div>
+          </div>
+          
+          <div class="table-responsive">
+            <table class="table table-bordered">
+              <thead class="table-light">
+                <tr>
+                  <th>รายการ</th>
+                  <th class="text-end">จำนวนเงิน (บาท)</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>ค่าธรรมเนียมเอกสาร (<%= request.copies %> ฉบับ)</td>
+                  <td class="text-end"><%= parseFloat(request.document_fee).toFixed(2) %></td>
+                </tr>
+                <% if (parseFloat(request.shipping_fee) > 0) { %>
+                  <tr>
+                    <td>ค่าจัดส่งทางไปรษณีย์</td>
+                    <td class="text-end"><%= parseFloat(request.shipping_fee).toFixed(2) %></td>
+                  </tr>
+                <% } %>
+                <tr class="table-light fw-bold">
+                  <td>รวมทั้งสิ้น</td>
+                  <td class="text-end"><%= parseFloat(request.total_fee).toFixed(2) %></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      
+      <!-- แบบฟอร์มชำระเงิน -->
+      <div class="card shadow-sm mb-4">
+        <div class="card-header bg-light">
+          <h4 class="card-title mb-0">วิธีการชำระเงิน</h4>
+        </div>
+        <div class="card-body">
+          <div class="alert alert-info mb-4">
+            <div class="d-flex">
+              <i class="fas fa-info-circle me-3 fs-4"></i>
+              <div>
+                <p class="mb-0">กรุณาเลือกวิธีการชำระเงินและอัปโหลดหลักฐานการชำระเงิน (สลิป) เพื่อให้เจ้าหน้าที่ตรวจสอบ</p>
+              </div>
+            </div>
+          </div>
+          
+          <form id="paymentForm" action="/student/payment/<%= request.reference %>" method="POST" enctype="multipart/form-data">
+            <!-- วิธีการชำระเงิน -->
+            <div class="mb-3">
+              <label class="form-label">เลือกวิธีการชำระเงิน <span class="text-danger">*</span></label>
+              <div class="form-check mb-2">
+                <input class="form-check-input" type="radio" name="paymentMethod" id="qrPayment" value="qr_payment" checked required>
+                <label class="form-check-label" for="qrPayment">
+                  <i class="fas fa-qrcode me-2"></i> QR Payment (พร้อมเพย์)
+                </label>
+              </div>
+              <div class="form-check mb-2">
+                <input class="form-check-input" type="radio" name="paymentMethod" id="bankTransfer" value="bank_transfer" required>
+                <label class="form-check-label" for="bankTransfer">
+                  <i class="fas fa-university me-2"></i> โอนเงินผ่านธนาคาร
+                </label>
+              </div>
+            </div>
+            
+            <!-- QR Code สำหรับชำระเงิน -->
+            <div class="mb-4 text-center">
+              <a href="/documents/payment-qr/<%= request.id %>" id="generateQR" class="btn btn-outline-primary">
+                <i class="fas fa-qrcode me-2"></i> แสดง QR Code สำหรับชำระเงิน
+              </a>
+            </div>
+            
+            <!-- ข้อมูลบัญชีธนาคาร -->
+            <div class="mb-4">
+              <div class="card bg-light">
+                <div class="card-body py-3">
+                  <h5 class="card-title">ข้อมูลบัญชีสำหรับการโอนเงิน</h5>
+                  <p class="mb-1"><strong>ชื่อบัญชี:</strong> มหาวิทยาลัยนอร์กรุงเทพ</p>
+                  <p class="mb-1"><strong>ธนาคาร:</strong> กรุงไทย</p>
+                  <p class="mb-1"><strong>เลขที่บัญชี:</strong> 123-4-56789-0</p>
+                  <p class="mb-0"><strong>สาขา:</strong> สำนักงานใหญ่</p>
+                  <p class="text-danger small mt-2 mb-0">* กรุณาระบุเลขที่อ้างอิง <%= request.reference %> ในช่องหมายเหตุการโอนเงิน</p>
+                </div>
+              </div>
+            </div>
+            
+            <!-- หมายเลขอ้างอิงการชำระเงิน -->
+            <div class="mb-3">
+              <label for="paymentReference" class="form-label">หมายเลขอ้างอิงการชำระเงิน <span class="text-danger">*</span></label>
+              <input type="text" class="form-control" id="paymentReference" name="paymentReference" placeholder="เช่น เลขที่รายการในสลิป" required>
+              <div class="form-text">ระบุหมายเลขอ้างอิงที่ปรากฏในสลิปหรือหลักฐานการชำระเงิน</div>
+            </div>
+            
+            <!-- วันที่ชำระเงิน -->
+            <div class="mb-3">
+              <label for="paymentDate" class="form-label">วันที่ชำระเงิน <span class="text-danger">*</span></label>
+              <input type="date" class="form-control" id="paymentDate" name="paymentDate" required>
+            </div>
+            
+            <!-- อัปโหลดสลิป -->
+            <div class="mb-3">
+              <label for="paymentSlip" class="form-label">อัปโหลดสลิปการโอนเงิน <span class="text-danger">*</span></label>
+              <input type="file" class="form-control" id="paymentSlip" name="paymentSlip" accept=".jpg,.jpeg,.png,.pdf" required>
+              <div class="form-text">รองรับไฟล์: JPG, JPEG, PNG, PDF (ขนาดไม่เกิน 5MB)</div>
+              <div id="slipError" class="text-danger mt-1 d-none"></div>
+              <div class="mt-2">
+                <img id="slipPreview" class="img-fluid d-none" style="max-height: 200px;">
+              </div>
+            </div>
+            
+            <!-- ยืนยันการชำระเงิน -->
+            <div class="d-grid gap-2 mt-4">
+              <button type="submit" class="btn btn-primary btn-lg">
+                <i class="fas fa-check-circle me-2"></i> ยืนยันการชำระเงิน
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+      
+      <!-- คำแนะนำ -->
+      <div class="card shadow-sm">
+        <div class="card-header bg-light">
+          <h4 class="card-title mb-0">คำแนะนำการชำระเงิน</h4>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-6">
+              <h5><i class="fas fa-info-circle me-2"></i> ข้อแนะนำในการชำระเงิน</h5>
+              <ul class="small">
+                <li>ตรวจสอบจำนวนเงินให้ถูกต้องก่อนโอน</li>
+                <li>เก็บหลักฐานการชำระเงินไว้จนกว่าจะได้รับเอกสาร</li>
+                <li>หากไม่สามารถอัปโหลดสลิปได้ กรุณาติดต่อสำนักทะเบียน</li>
+                <li>หลังจากยืนยันการชำระเงินแล้ว เจ้าหน้าที่จะตรวจสอบภายใน 1 วันทำการ</li>
+              </ul>
+            </div>
+            <div class="col-md-6">
+              <h5><i class="fas fa-exclamation-circle me-2"></i> ข้อควรระวัง</h5>
+              <ul class="small">
+                <li>ตรวจสอบชื่อบัญชีผู้รับโอนให้ถูกต้องก่อนโอนเงิน</li>
+                <li>ระบุหมายเลขอ้างอิงให้ครบถ้วนเพื่อป้องกันความผิดพลาด</li>
+                <li>ห้ามโอนเงินซ้ำ หากมีปัญหากรุณาติดต่อสำนักทะเบียน</li>
+                <li>คำขอจะถูกยกเลิกโดยอัตโนมัติหากไม่ได้รับการชำระเงินภายใน 7 วัน</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
