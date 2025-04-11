@@ -1,0 +1,80 @@
+<%- include('./partials/header') %>
+
+<div class="container">
+  <div class="row justify-content-center">
+    <div class="col-md-6">
+      <div class="card shadow-sm my-5">
+        <div class="card-body p-4">
+          <div class="text-center mb-4">
+            <img src="/images/logo.png" alt="มหาวิทยาลัยนอร์กรุงเทพ" class="mb-3" width="100">
+            <h2 class="text-primary">ระบบขอเอกสารออนไลน์สำหรับนักศึกษา</h2>
+            <p class="text-muted">กรุณาเข้าสู่ระบบด้วยรหัสนักศึกษาและรหัสผ่าน</p>
+          </div>
+
+          <% if(typeof errors !== 'undefined'){ %>
+            <% errors.forEach(function(error) { %>
+              <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <%= error.msg %>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+              </div>
+            <% }); %>
+          <% } %>
+          
+          <% if(success_msg != ''){ %>
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+              <%= success_msg %>
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+          <% } %>
+          
+          <% if(error_msg != ''){ %>
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+              <%= error_msg %>
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+          <% } %>
+          
+          <% if(error != ''){ %>
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+              <%= error %>
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+          <% } %>
+          
+          <form action="/login" method="POST">
+            <div class="mb-3">
+              <label for="studentId" class="form-label">รหัสนักศึกษา</label>
+              <input type="text" class="form-control" id="studentId" name="studentId" placeholder="กรุณากรอกรหัสนักศึกษา" required autofocus>
+            </div>
+            <div class="mb-3">
+              <label for="password" class="form-label">รหัสผ่าน</label>
+              <input type="password" class="form-control" id="password" name="password" placeholder="กรุณากรอกรหัสผ่าน" required>
+            </div>
+            <div class="mb-3 form-check">
+              <input type="checkbox" class="form-check-input" id="rememberMe" name="rememberMe">
+              <label class="form-check-label" for="rememberMe">จดจำรหัสผ่าน</label>
+            </div>
+            <div class="d-grid gap-2">
+              <button type="submit" class="btn btn-primary btn-lg">เข้าสู่ระบบ</button>
+            </div>
+          </form>
+          
+          <div class="text-center mt-3">
+            <a href="#" class="text-decoration-none">ลืมรหัสผ่าน?</a>
+            <div class="mt-3">
+              <a href="/admin/login" class="btn btn-outline-secondary btn-sm">สำหรับเจ้าหน้าที่</a>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="text-center text-muted small">
+        <p>หากมีปัญหาในการใช้งาน กรุณาติดต่อสำนักทะเบียนและประมวลผลการศึกษา</p>
+        <p>โทร: 02-XXX-XXXX | อีเมล: registrar@nordbkk.ac.th</p>
+        <p>&copy; <%= new Date().getFullYear() %> มหาวิทยาลัยนอร์กรุงเทพ</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%- include('./partials/footer') %>
