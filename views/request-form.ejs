@@ -1,0 +1,229 @@
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-10">
+      <!-- ส่วนหัว -->
+      <div class="d-flex align-items-center justify-content-between mb-4">
+        <h2><i class="fas fa-file-alt me-2"></i> ขอ<%= documentTypeThai %></h2>
+        <a href="/student/select-document" class="btn btn-outline-secondary">
+          <i class="fas fa-arrow-left me-2"></i> กลับไปเลือกประเภทเอกสาร
+        </a>
+      </div>
+      
+      <!-- แบบฟอร์มขอเอกสาร -->
+      <form id="documentRequestForm" action="/student/submit-request" method="POST" enctype="multipart/form-data">
+        <div class="card shadow-sm mb-4">
+          <div class="card-header bg-light">
+            <h4 class="card-title mb-0">ข้อมูลเอกสาร</h4>
+          </div>
+          <div class="card-body">
+            <!-- ประเภทเอกสาร (hidden) -->
+            <input type="hidden" name="documentType" id="documentType" value="<%= documentType %>">
+            
+            <!-- ข้อมูลนักศึกษา (แสดงเท่านั้น) -->
+            <div class="row mb-3">
+              <div class="col-md-12">
+                <label class="form-label">ข้อมูลผู้ขอ</label>
+                <div class="card bg-light">
+                  <div class="card-body py-3">
+                    <div class="row">
+                      <div class="col-md-6">
+                        <p class="mb-1"><strong>รหัสนักศึกษา:</strong> <%= user.student_id %></p>
+                        <p class="mb-1"><strong>ชื่อ-นามสกุล:</strong> <%= user.first_name %> <%= user.last_name %></p>
+                      </div>
+                      <div class="col-md-6">
+                        <p class="mb-1"><strong>คณะ:</strong> <%= user.faculty || '-' %></p>
+                        <p class="mb-1"><strong>สาขาวิชา:</strong> <%= user.major || '-' %></p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- จำนวนฉบับ -->
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <label for="copies" class="form-label">จำนวนฉบับ <span class="text-danger">*</span></label>
+                <input type="number" class="form-control" id="copies" name="copies" min="1" max="10" value="<%= locals.duplicatedRequest ? duplicatedRequest.copies : 1 %>" required>
+                <div class="form-text">สามารถขอได้สูงสุด 10 ฉบับต่อการขอ 1 ครั้ง</div>
+              </div>
+            </div>
+            
+            <!-- วัตถุประสงค์ -->
+            <div class="row mb-3">
+              <div class="col-md-12">
+                <label for="purpose" class="form-label">วัตถุประสงค์ในการขอเอกสาร <span class="text-danger">*</span></label>
+                <textarea class="form-control" id="purpose" name="purpose" rows="3" required><%= locals.duplicatedRequest ? duplicatedRequest.purpose : '' %></textarea>
+                <div class="form-text">ระบุวัตถุประสงค์ในการขอเอกสาร เช่น ใช้สมัครงาน, ศึกษาต่อ, ขอวีซ่า เป็นต้น</div>
+              </div>
+            </div>
+            
+            <!-- แนบไฟล์ (ถ้ามี) -->
+            <div class="row mb-3">
+              <div class="col-md-12">
+                <label for="attachments" class="form-label">แนบเอกสารเพิ่มเติม (ถ้ามี)</label>
+                <input type="file" class="form-control" id="attachments" name="attachments" multiple accept=".pdf,.jpg,.jpeg,.png">
+                <div class="form-text">
+                  รองรับไฟล์: PDF, JPG, JPEG, PNG (ขนาดไม่เกิน 5MB ต่อไฟล์)
+                  <% if (documentType === 'enrollment') { %>
+                    <br><span class="text-danger">* กรุณาแนบใบแจ้งความประสงค์ลงทะเบียน (มจพ.13) ที่กรอกข้อมูลแล้ว</span>
+                  <% } else if (documentType === 'general') { %>
+                    <br><span class="text-danger">* กรุณาแนบแบบฟอร์มคำร้องทั่วไปที่กรอกข้อมูลแล้ว</span>
+                  <% } %>
+                </div>
+                <div id="fileError" class="text-danger d-none"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="card shadow-sm mb-4">
+          <div class="card-header bg-light">
+            <h4 class="card-title mb-0">วิธีรับเอกสาร</h4>
+          </div>
+          <div class="card-body">
+            <!-- วิธีรับเอกสาร -->
+            <div class="row mb-3">
+              <div class="col-md-12">
+                <label class="form-label">เลือกวิธีรับเอกสาร <span class="text-danger">*</span></label>
+                <div class="form-check mb-2">
+                  <input class="form-check-input" type="radio" name="deliveryMethod" id="pickup" value="pickup" <%= locals.duplicatedRequest && duplicatedRequest.deliveryMethod === 'pickup' ? 'checked' : (!locals.duplicatedRequest ? 'checked' : '') %> required>
+                  <label class="form-check-label" for="pickup">
+                    <i class="fas fa-building me-2"></i> รับด้วยตนเองที่สำนักทะเบียน
+                  </label>
+                </div>
+                <div class="form-check mb-2">
+                  <input class="form-check-input" type="radio" name="deliveryMethod" id="postal" value="postal" <%= locals.duplicatedRequest && duplicatedRequest.deliveryMethod === 'postal' ? 'checked' : '' %> required>
+                  <label class="form-check-label" for="postal">
+                    <i class="fas fa-shipping-fast me-2"></i> จัดส่งทางไปรษณีย์ (มีค่าจัดส่ง 50 บาท)
+                  </label>
+                </div>
+                <% if (documentType === 'certificate') { %>
+                <div class="form-check">
+                  <input class="form-check-input" type="radio" name="deliveryMethod" id="digital" value="digital" <%= locals.duplicatedRequest && duplicatedRequest.deliveryMethod === 'digital' ? 'checked' : '' %> required>
+                  <label class="form-check-label" for="digital">
+                    <i class="fas fa-envelope me-2"></i> รับเอกสารดิจิทัลทางอีเมล
+                  </label>
+                </div>
+                <% } %>
+              </div>
+            </div>
+            
+            <!-- ที่อยู่จัดส่ง (แสดงเมื่อเลือกจัดส่งทางไปรษณีย์) -->
+            <div id="addressFormGroup" class="<%= locals.duplicatedRequest && duplicatedRequest.deliveryMethod === 'postal' ? '' : 'd-none' %>">
+              <hr>
+              <h5>ที่อยู่จัดส่ง <span class="text-danger">*</span></h5>
+              
+              <div class="row mb-3">
+                <div class="col-md-12">
+                  <label for="addressLine1" class="form-label">ที่อยู่บรรทัดที่ 1</label>
+                  <input type="text" class="form-control" id="addressLine1" name="addressLine1" placeholder="บ้านเลขที่ หมู่บ้าน/อาคาร ซอย ถนน" value="<%= locals.duplicatedRequest && duplicatedRequest.deliveryAddress ? duplicatedRequest.deliveryAddress.split(',')[0] : '' %>">
+                </div>
+              </div>
+              
+              <div class="row mb-3">
+                <div class="col-md-12">
+                  <label for="addressLine2" class="form-label">ที่อยู่บรรทัดที่ 2 (ถ้ามี)</label>
+                  <input type="text" class="form-control" id="addressLine2" name="addressLine2" placeholder="ตำบล/แขวง" value="<%= locals.duplicatedRequest && duplicatedRequest.deliveryAddress && duplicatedRequest.deliveryAddress.split(',').length > 1 ? duplicatedRequest.deliveryAddress.split(',')[1] : '' %>">
+                </div>
+              </div>
+              
+              <div class="row mb-3">
+                <div class="col-md-4">
+                  <label for="district" class="form-label">อำเภอ/เขต</label>
+                  <input type="text" class="form-control" id="district" name="district" placeholder="อำเภอ/เขต" value="<%= locals.duplicatedRequest && duplicatedRequest.deliveryAddress && duplicatedRequest.deliveryAddress.split(',').length > 2 ? duplicatedRequest.deliveryAddress.split(',')[2] : '' %>">
+                </div>
+                <div class="col-md-4">
+                  <label for="province" class="form-label">จังหวัด</label>
+                  <input type="text" class="form-control" id="province" name="province" placeholder="จังหวัด" value="<%= locals.duplicatedRequest && duplicatedRequest.deliveryAddress && duplicatedRequest.deliveryAddress.split(',').length > 3 ? duplicatedRequest.deliveryAddress.split(',')[3] : '' %>">
+                </div>
+                <div class="col-md-4">
+                  <label for="postalCode" class="form-label">รหัสไปรษณีย์</label>
+                  <input type="text" class="form-control" id="postalCode" name="postalCode" placeholder="รหัสไปรษณีย์" value="<%= locals.duplicatedRequest && duplicatedRequest.deliveryAddress && duplicatedRequest.deliveryAddress.split(',').length > 4 ? duplicatedRequest.deliveryAddress.split(',')[4] : '' %>">
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- แสดงค่าธรรมเนียม -->
+        <div id="feeDisplay" class="card shadow-sm mb-4 <%= documentType === 'certificate' && locals.duplicatedRequest && locals.duplicatedRequest.deliveryMethod === 'digital' ? 'd-none' : '' %>">
+          <div class="card-header bg-light">
+            <h4 class="card-title mb-0">ค่าธรรมเนียม</h4>
+          </div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table table-borderless">
+                <tbody>
+                  <tr>
+                    <td>ค่าธรรมเนียมเอกสาร</td>
+                    <td class="text-end"><span id="documentFee">0.00</span> บาท</td>
+                  </tr>
+                  <tr>
+                    <td>ค่าจัดส่ง</td>
+                    <td class="text-end"><span id="deliveryFee">0.00</span> บาท</td>
+                  </tr>
+                  <tr class="fw-bold">
+                    <td>รวมทั้งสิ้น</td>
+                    <td class="text-end"><span id="totalFee">0.00</span> บาท</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            
+            <div class="alert alert-warning small">
+              <strong><i class="fas fa-info-circle me-2"></i> วิธีการชำระเงิน:</strong> 
+              <p class="mb-1">1. ชำระผ่าน QR Code (พร้อมเพย์) หลังจากส่งคำขอ</p>
+              <p class="mb-1">2. ชำระเงินสดที่เคาน์เตอร์สำนักทะเบียน (กรณีมารับเอกสารด้วยตนเอง)</p>
+              <p class="mb-0">กรุณาเก็บหลักฐานการชำระเงินไว้จนกว่าจะได้รับเอกสาร</p>
+            </div>
+          </div>
+        </div>
+        
+        <!-- ยืนยันการส่งคำขอ -->
+        <div class="card shadow-sm mb-4">
+          <div class="card-body">
+            <div class="form-check mb-3">
+              <input class="form-check-input" type="checkbox" id="confirmInfo" name="confirmInfo" required>
+              <label class="form-check-label" for="confirmInfo">
+                ข้าพเจ้าขอรับรองว่าข้อมูลที่ให้ไว้ข้างต้นเป็นความจริงทุกประการ
+              </label>
+            </div>
+            
+            <div class="d-grid gap-2">
+              <button type="submit" class="btn btn-primary btn-lg">
+                <i class="fas fa-paper-plane me-2"></i> ส่งคำขอ
+              </button>
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ควบคุมการแสดง/ซ่อนฟอร์มที่อยู่
+  document.addEventListener('DOMContentLoaded', function() {
+    const deliveryMethod = document.querySelectorAll('input[name="deliveryMethod"]');
+    const addressFormGroup = document.getElementById('addressFormGroup');
+    const feeDisplay = document.getElementById('feeDisplay');
+    
+    deliveryMethod.forEach(function(radio) {
+      radio.addEventListener('change', function() {
+        if (this.value === 'postal') {
+          addressFormGroup.classList.remove('d-none');
+        } else {
+          addressFormGroup.classList.add('d-none');
+        }
+        
+        // ซ่อนส่วนค่าธรรมเนียมถ้าเลือกรับเอกสารดิจิทัล (เฉพาะกรณีหนังสือรับรอง)
+        if (this.value === 'digital' && document.getElementById('documentType').value === 'certificate') {
+          feeDisplay.classList.add('d-none');
+        } else {
+          feeDisplay.classList.remove('d-none');
+        }
+      });
+    });
+  });
+</script>
