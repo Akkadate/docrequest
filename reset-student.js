@@ -17,7 +17,7 @@ async function resetStudentPassword() {
       console.log('Student user not found');
     }
   } catch (error) {
-    console.error('Error updating admin password:', error);
+    console.error('Error updating student password:', error);
   }
 }
 
