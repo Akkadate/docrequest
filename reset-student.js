@@ -7,7 +7,7 @@ async function resetStudentPassword() {
     const hashedPassword = await bcrypt.hash('12345', salt);
     
     const result = await db.query(
-      'UPDATE students SET password = $1 WHERE username = $2 RETURNING id',
+      'UPDATE students SET password = $1 WHERE student_id = $2 RETURNING id',
       [hashedPassword, '6200001']
     );
     
