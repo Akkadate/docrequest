@@ -1,0 +1,69 @@
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <div class="card shadow-sm">
+        <div class="card-body p-4 text-center">
+          <div class="mb-4">
+            <i class="fas fa-check-circle text-success" style="font-size: 5rem;"></i>
+          </div>
+          <h3 class="card-title mb-3">ส่งคำขอเรียบร้อยแล้ว</h3>
+          <p class="lead mb-4">คำขอของคุณได้ถูกส่งไปยังเจ้าหน้าที่เรียบร้อยแล้ว</p>
+          
+          <div class="alert alert-primary mb-4">
+            <h5>เลขที่อ้างอิง: <span class="badge bg-primary"><%= request.reference %></span></h5>
+            <p class="mb-0">กรุณาบันทึกเลขที่อ้างอิงไว้เพื่อใช้ในการติดตามสถานะคำขอ</p>
+          </div>
+          
+          <div class="card bg-light mb-4">
+            <div class="card-body">
+              <h5 class="card-title mb-3">รายละเอียดคำขอ</h5>
+              <dl class="row mb-0">
+                <dt class="col-sm-5 text-start">ประเภทเอกสาร:</dt>
+                <dd class="col-sm-7 text-start"><%= request.documentTypeThai %></dd>
+                
+                <dt class="col-sm-5 text-start">จำนวนฉบับ:</dt>
+                <dd class="col-sm-7 text-start"><%= request.copies %> ฉบับ</dd>
+                
+                <dt class="col-sm-5 text-start">วิธีรับเอกสาร:</dt>
+                <dd class="col-sm-7 text-start"><%= request.deliveryMethodThai %></dd>
+                
+                <dt class="col-sm-5 text-start">สถานะ:</dt>
+                <dd class="col-sm-7 text-start"><span class="badge bg-warning text-dark"><%= request.statusThai %></span></dd>
+                
+                <% if (fees.totalFee > 0) { %>
+                  <dt class="col-sm-5 text-start">ค่าธรรมเนียมทั้งหมด:</dt>
+                  <dd class="col-sm-7 text-start"><%= fees.totalFee.toFixed(2) %> บาท</dd>
+                  
+                  <dt class="col-sm-5 text-start">สถานะการชำระเงิน:</dt>
+                  <dd class="col-sm-7 text-start"><span class="badge bg-warning text-dark">รอชำระเงิน</span></dd>
+                <% } %>
+                
+                <dt class="col-sm-5 text-start">ระยะเวลาดำเนินการ:</dt>
+                <dd class="col-sm-7 text-start">ประมาณ <%= request.estimatedDays %> วันทำการ</dd>
+                
+                <dt class="col-sm-5 text-start">คาดว่าจะเสร็จภายใน:</dt>
+                <dd class="col-sm-7 text-start"><%= request.estimatedDate %></dd>
+              </dl>
+            </div>
+          </div>
+          
+          <div class="d-flex justify-content-center gap-3">
+            <% if (fees.totalFee > 0) { %>
+              <a href="/student/payment/<%= request.reference %>" class="btn btn-primary">
+                <i class="fas fa-credit-card me-2"></i> ชำระเงิน
+              </a>
+            <% } %>
+            
+            <a href="/student/track-status?ref=<%= request.reference %>" class="btn btn-info">
+              <i class="fas fa-search me-2"></i> ติดตามสถานะคำขอ
+            </a>
+            
+            <a href="/student/document-history" class="btn btn-outline-secondary">
+              <i class="fas fa-history me-2"></i> ประวัติการขอเอกสาร
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
