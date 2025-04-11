@@ -1,0 +1,325 @@
+<div class="container-fluid py-4">
+  <div class="row mb-4">
+    <div class="col-lg-12">
+      <h2 class="mb-4"><i class="fas fa-file-alt me-2"></i> จัดการคำขอทั้งหมด</h2>
+      
+      <!-- ตัวกรอง -->
+      <div class="card shadow-sm mb-4">
+        <div class="card-body">
+          <form action="/admin/requests" method="GET" class="row g-3">
+            <div class="col-md-3">
+              <label for="status" class="form-label">สถานะ</label>
+              <select class="form-select" id="status" name="status">
+                <option value="" <%= !filters.status ? 'selected' : '' %>>ทั้งหมด</option>
+                <option value="pending" <%= filters.status === 'pending' ? 'selected' : '' %>>รอดำเนินการ</option>
+                <option value="processing" <%= filters.status === 'processing' ? 'selected' : '' %>>กำลังดำเนินการ</option>
+                <option value="awaiting_verification" <%= filters.status === 'awaiting_verification' ? 'selected' : '' %>>รอตรวจสอบการชำระเงิน</option>
+                <option value="awaiting_payment" <%= filters.status === 'awaiting_payment' ? 'selected' : '' %>>รอชำระเงิน</option>
+                <option value="ready_for_pickup" <%= filters.status === 'ready_for_pickup' ? 'selected' : '' %>>พร้อมให้รับเอกสาร</option>
+                <option value="shipped" <%= filters.status === 'shipped' ? 'selected' : '' %>>จัดส่งแล้ว</option>
+                <option value="completed" <%= filters.status === 'completed' ? 'selected' : '' %>>เสร็จสิ้น</option>
+                <option value="rejected" <%= filters.status === 'rejected' ? 'selected' : '' %>>ปฏิเสธคำขอ</option>
+                <option value="cancelled" <%= filters.status === 'cancelled' ? 'selected' : '' %>>ยกเลิก</option>
+              </select>
+            </div>
+            <div class="col-md-3">
+              <label for="documentType" class="form-label">ประเภทเอกสาร</label>
+              <select class="form-select" id="documentType" name="documentType">
+                <option value="" <%= !filters.documentType ? 'selected' : '' %>>ทั้งหมด</option>
+                <option value="transcript" <%= filters.documentType === 'transcript' ? 'selected' : '' %>>ใบแสดงผลการเรียน</option>
+                <option value="certificate" <%= filters.documentType === 'certificate' ? 'selected' : '' %>>หนังสือรับรองการเป็นนักศึกษา</option>
+                <option value="graduation" <%= filters.documentType === 'graduation' ? 'selected' : '' %>>หนังสือรับรองสำเร็จการศึกษา</option>
+                <option value="enrollment" <%= filters.documentType === 'enrollment' ? 'selected' : '' %>>คำร้องขอลงทะเบียน</option>
+                <option value="general" <%= filters.documentType === 'general' ? 'selected' : '' %>>คำร้องทั่วไป</option>
+              </select>
+            </div>
+            <div class="col-md-3">
+              <label for="paymentStatus" class="form-label">สถานะการชำระเงิน</label>
+              <select class="form-select" id="paymentStatus" name="paymentStatus">
+                <option value="" <%= !filters.paymentStatus ? 'selected' : '' %>>ทั้งหมด</option>
+                <option value="paid" <%= filters.paymentStatus === 'paid' ? 'selected' : '' %>>ชำระแล้ว</option>
+                <option value="pending" <%= filters.paymentStatus === 'pending' ? 'selected' : '' %>>รอชำระเงิน</option>
+                <option value="pending_verification" <%= filters.paymentStatus === 'pending_verification' ? 'selected' : '' %>>รอตรวจสอบ</option>
+                <option value="rejected" <%= filters.paymentStatus === 'rejected' ? 'selected' : '' %>>ไม่อนุมัติ</option>
+                <option value="not_required" <%= filters.paymentStatus === 'not_required' ? 'selected' : '' %>>ไม่มีค่าใช้จ่าย</option>
+              </select>
+            </div>
+            <div class="col-md-3">
+              <label for="search" class="form-label">ค้นหา</label>
+              <div class="input-group">
+                <input type="text" class="form-control" id="search" name="search" placeholder="รหัสอ้างอิง, รหัสนักศึกษา, ชื่อ" value="<%= filters.search %>">
+                <button class="btn btn-primary" type="submit">
+                  <i class="fas fa-search"></i>
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+      
+      <!-- ตารางคำขอ -->
+      <div class="card shadow-sm">
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th>เลขที่อ้างอิง</th>
+                  <th>ประเภทเอกสาร</th>
+                  <th>นักศึกษา</th>
+                  <th>วันที่ยื่นคำขอ</th>
+                  <th>สถานะ</th>
+                  <th>การชำระเงิน</th>
+                  <th>การดำเนินการ</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% if (requests && requests.length > 0) { %>
+                  <% requests.forEach(function(request) { %>
+                    <tr>
+                      <td><span class="badge bg-primary"><%= request.reference %></span></td>
+                      <td><%= request.documentTypeThai %></td>
+                      <td>
+                        <div class="d-flex flex-column">
+                          <span><%= request.first_name %> <%= request.last_name %></span>
+                          <small class="text-muted"><%= request.student_number %></small>
+                        </div>
+                      </td>
+                      <td><%= request.createdAtThai %></td>
+                      <td>
+                        <% if (request.status === 'pending') { %>
+                          <span class="badge bg-secondary">รอดำเนินการ</span>
+                        <% } else if (request.status === 'processing') { %>
+                          <span class="badge bg-info text-white">กำลังดำเนินการ</span>
+                        <% } else if (request.status === 'awaiting_verification') { %>
+                          <span class="badge bg-warning text-dark">รอตรวจสอบการชำระเงิน</span>
+                        <% } else if (request.status === 'awaiting_payment') { %>
+                          <span class="badge bg-warning text-dark">รอชำระเงิน</span>
+                        <% } else if (request.status === 'ready_for_pickup') { %>
+                          <span class="badge bg-success">พร้อมให้รับเอกสาร</span>
+                        <% } else if (request.status === 'shipped') { %>
+                          <span class="badge bg-success">จัดส่งแล้ว</span>
+                        <% } else if (request.status === 'completed') { %>
+                          <span class="badge bg-success">เสร็จสิ้น</span>
+                        <% } else if (request.status === 'rejected') { %>
+                          <span class="badge bg-danger">ปฏิเสธคำขอ</span>
+                        <% } else if (request.status === 'cancelled') { %>
+                          <span class="badge bg-danger">ยกเลิก</span>
+                        <% } else { %>
+                          <span class="badge bg-secondary"><%= request.statusThai %></span>
+                        <% } %>
+                      </td>
+                      <td>
+                        <% if (request.payment_status === 'paid') { %>
+                          <span class="badge bg-success">ชำระแล้ว</span>
+                        <% } else if (request.payment_status === 'pending') { %>
+                          <span class="badge bg-warning text-dark">รอชำระเงิน</span>
+                        <% } else if (request.payment_status === 'pending_verification') { %>
+                          <span class="badge bg-warning text-dark">รอตรวจสอบ</span>
+                        <% } else if (request.payment_status === 'rejected') { %>
+                          <span class="badge bg-danger">ไม่อนุมัติ</span>
+                        <% } else if (request.payment_status === 'not_required') { %>
+                          <span class="badge bg-secondary">ไม่มีค่าใช้จ่าย</span>
+                        <% } %>
+                      </td>
+                      <td>
+                        <div class="btn-group" role="group">
+                          <a href="/admin/request/<%= request.id %>" class="btn btn-sm btn-primary">
+                            <i class="fas fa-eye"></i> รายละเอียด
+                          </a>
+                          <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-cog"></i>
+                          </button>
+                          <ul class="dropdown-menu dropdown-menu-end">
+                            <% if (request.status === 'pending') { %>
+                              <li>
+                                <a class="dropdown-item start-processing" href="#" data-id="<%= request.id %>">
+                                  <i class="fas fa-play text-primary me-2"></i> เริ่มดำเนินการ
+                                </a>
+                              </li>
+                              <li>
+                                <a class="dropdown-item reject-request" href="#" data-id="<%= request.id %>" data-bs-toggle="modal" data-bs-target="#rejectModal">
+                                  <i class="fas fa-times-circle text-danger me-2"></i> ปฏิเสธคำขอ
+                                </a>
+                              </li>
+                            <% } else if (request.status === 'awaiting_verification') { %>
+                              <li>
+                                <a class="dropdown-item verify-payment" href="#" data-id="<%= request.id %>">
+                                  <i class="fas fa-check-circle text-success me-2"></i> ตรวจสอบการชำระเงิน
+                                </a>
+                              </li>
+                            <% } else if (request.status === 'processing') { %>
+                              <li>
+                                <a class="dropdown-item mark-ready" href="#" data-id="<%= request.id %>">
+                                  <i class="fas fa-check text-success me-2"></i> เอกสารพร้อมให้รับ
+                                </a>
+                              </li>
+                            <% } else if (request.status === 'ready_for_pickup') { %>
+                              <li>
+                                <a class="dropdown-item mark-picked-up" href="#" data-id="<%= request.id %>">
+                                  <i class="fas fa-hand-holding text-success me-2"></i> บันทึกการรับเอกสาร
+                                </a>
+                              </li>
+                            <% } %>
+                            <% if ((request.status === 'processing' || request.status === 'ready_for_pickup') && request.delivery_method === 'postal' && !request.tracking_number) { %>
+                              <li>
+                                <a class="dropdown-item update-shipping" href="#" data-id="<%= request.id %>">
+                                  <i class="fas fa-shipping-fast text-primary me-2"></i> บันทึกการจัดส่ง
+                                </a>
+                              </li>
+                            <% } %>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                              <a class="dropdown-item" href="/admin/student/<%= request.student_id %>">
+                                <i class="fas fa-user text-secondary me-2"></i> ดูข้อมูลนักศึกษา
+                              </a>
+                            </li>
+                          </ul>
+                        </div>
+                      </td>
+                    </tr>
+                  <% }); %>
+                <% } else { %>
+                  <tr>
+                    <td colspan="7" class="text-center py-3">ไม่พบข้อมูลคำขอ</td>
+                  </tr>
+                <% } %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="card-footer">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              แสดง <span class="fw-bold"><%= requests ? requests.length : 0 %></span> รายการ จากทั้งหมด <span class="fw-bold"><%= pagination.totalCount %></span> รายการ
+            </div>
+            <% if (pagination.totalPages > 1) { %>
+              <nav aria-label="Page navigation">
+                <ul class="pagination mb-0">
+                  <li class="page-item <%= pagination.page <= 1 ? 'disabled' : '' %>">
+                    <a class="page-link" href="/admin/requests?page=<%= pagination.page - 1 %>&status=<%= filters.status %>&documentType=<%= filters.documentType %>&paymentStatus=<%= filters.paymentStatus %>&search=<%= filters.search %>" aria-label="Previous">
+                      <span aria-hidden="true">&laquo;</span>
+                    </a>
+                  </li>
+                  <% for (let i = 1; i <= pagination.totalPages; i++) { %>
+                    <li class="page-item <%= pagination.page === i ? 'active' : '' %>">
+                      <a class="page-link" href="/admin/requests?page=<%= i %>&status=<%= filters.status %>&documentType=<%= filters.documentType %>&paymentStatus=<%= filters.paymentStatus %>&search=<%= filters.search %>"><%= i %></a>
+                    </li>
+                  <% } %>
+                  <li class="page-item <%= pagination.page >= pagination.totalPages ? 'disabled' : '' %>">
+                    <a class="page-link" href="/admin/requests?page=<%= pagination.page + 1 %>&status=<%= filters.status %>&documentType=<%= filters.documentType %>&paymentStatus=<%= filters.paymentStatus %>&search=<%= filters.search %>" aria-label="Next">
+                      <span aria-hidden="true">&raquo;</span>
+                    </a>
+                  </li>
+                </ul>
+              </nav>
+            <% } %>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal สำหรับปฏิเสธคำขอ -->
+<div class="modal fade" id="rejectModal" tabindex="-1" aria-labelledby="rejectModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form id="rejectForm" action="/admin/reject-request/" method="POST">
+        <div class="modal-header">
+          <h5 class="modal-title" id="rejectModalLabel">ปฏิเสธคำขอ</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="rejectReason" class="form-label">เหตุผลในการปฏิเสธ</label>
+            <textarea class="form-control" id="rejectReason" name="rejectReason" rows="4" required></textarea>
+            <div class="form-text">ระบุเหตุผลในการปฏิเสธคำขอให้ชัดเจน นักศึกษาจะได้รับการแจ้งเตือนทางอีเมล</div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ยกเลิก</button>
+          <button type="submit" class="btn btn-danger">ปฏิเสธคำขอ</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // จัดการกับการปฏิเสธคำขอ
+    document.querySelectorAll('.reject-request').forEach(function(element) {
+      element.addEventListener('click', function(e) {
+        e.preventDefault();
+        const requestId = this.getAttribute('data-id');
+        document.getElementById('rejectForm').action = `/admin/reject-request/${requestId}`;
+      });
+    });
+    
+    // จัดการกับการเริ่มดำเนินการ
+    document.querySelectorAll('.start-processing').forEach(function(element) {
+      element.addEventListener('click', function(e) {
+        e.preventDefault();
+        const requestId = this.getAttribute('data-id');
+
+// สร้างฟอร์มชั่วคราวเพื่อส่งข้อมูล
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = `/admin/update-status/${requestId}`;
+        
+        // เพิ่มฟิลด์ข้อมูล
+        const statusField = document.createElement('input');
+        statusField.type = 'hidden';
+        statusField.name = 'status';
+        statusField.value = 'processing';
+        
+        const notesField = document.createElement('input');
+        notesField.type = 'hidden';
+        notesField.name = 'notes';
+        notesField.value = 'เริ่มดำเนินการจัดทำเอกสาร';
+        
+        // เพิ่มฟิลด์ลงในฟอร์ม
+        form.appendChild(statusField);
+        form.appendChild(notesField);
+        
+        // เพิ่มฟอร์มลงในเอกสารและส่งข้อมูล
+        document.body.appendChild(form);
+        form.submit();
+      });
+    });
+    
+    // จัดการกับการตั้งค่าสถานะเป็นพร้อมให้รับเอกสาร
+    document.querySelectorAll('.mark-ready').forEach(function(element) {
+      element.addEventListener('click', function(e) {
+        e.preventDefault();
+        const requestId = this.getAttribute('data-id');
+        
+        // สร้างฟอร์มชั่วคราวเพื่อส่งข้อมูล
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = `/admin/update-status/${requestId}`;
+        
+        // เพิ่มฟิลด์ข้อมูล
+        const statusField = document.createElement('input');
+        statusField.type = 'hidden';
+        statusField.name = 'status';
+        statusField.value = 'ready_for_pickup';
+        
+        const notesField = document.createElement('input');
+        notesField.type = 'hidden';
+        notesField.name = 'notes';
+        notesField.value = 'เอกสารพร้อมให้รับแล้ว';
+        
+        // เพิ่มฟิลด์ลงในฟอร์ม
+        form.appendChild(statusField);
+        form.appendChild(notesField);
+        
+        // เพิ่มฟอร์มลงในเอกสารและส่งข้อมูล
+        document.body.appendChild(form);
+        form.submit();
+      });
+    });
+  });
+</script>
+      
