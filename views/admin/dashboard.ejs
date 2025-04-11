@@ -1,0 +1,160 @@
+<div class="container-fluid py-4">
+  <div class="row mb-4">
+    <div class="col-lg-12">
+      <h2 class="mb-4"><i class="fas fa-tachometer-alt me-2"></i> แดชบอร์ดเจ้าหน้าที่</h2>
+      
+      <!-- สรุปภาพรวม -->
+      <div class="row g-3 mb-4">
+        <!-- คำขอรอดำเนินการ -->
+        <div class="col-md-3">
+          <div class="card bg-primary text-white h-100">
+            <div class="card-body">
+              <div class="d-flex justify-content-between align-items-center">
+                <div>
+                  <h6 class="card-title mb-0">คำขอรอดำเนินการ</h6>
+                  <h2 class="display-4 mt-2 mb-0"><%= counts.pending %></h2>
+                </div>
+                <i class="fas fa-file-alt fa-3x opacity-50"></i>
+              </div>
+            </div>
+            <div class="card-footer d-flex align-items-center justify-content-between">
+              <a href="/admin/requests?status=pending" class="text-white text-decoration-none">ดูรายละเอียด</a>
+              <i class="fas fa-angle-right"></i>
+            </div>
+          </div>
+        </div>
+        
+        <!-- คำขอกำลังดำเนินการ -->
+        <div class="col-md-3">
+          <div class="card bg-info text-white h-100">
+            <div class="card-body">
+              <div class="d-flex justify-content-between align-items-center">
+                <div>
+                  <h6 class="card-title mb-0">กำลังดำเนินการ</h6>
+                  <h2 class="display-4 mt-2 mb-0"><%= counts.processing %></h2>
+                </div>
+                <i class="fas fa-spinner fa-3x opacity-50"></i>
+              </div>
+            </div>
+            <div class="card-footer d-flex align-items-center justify-content-between">
+              <a href="/admin/requests?status=processing" class="text-white text-decoration-none">ดูรายละเอียด</a>
+              <i class="fas fa-angle-right"></i>
+            </div>
+          </div>
+        </div>
+        
+        <!-- รอการชำระเงิน -->
+        <div class="col-md-3">
+          <div class="card bg-warning h-100">
+            <div class="card-body">
+              <div class="d-flex justify-content-between align-items-center">
+                <div>
+                  <h6 class="card-title mb-0">รอตรวจสอบการชำระเงิน</h6>
+                  <h2 class="display-4 mt-2 mb-0"><%= counts.verification %></h2>
+                </div>
+                <i class="fas fa-credit-card fa-3x opacity-50"></i>
+              </div>
+            </div>
+            <div class="card-footer d-flex align-items-center justify-content-between">
+              <a href="/admin/requests?status=awaiting_verification" class="text-white text-decoration-none">ดูรายละเอียด</a>
+              <i class="fas fa-angle-right"></i>
+            </div>
+          </div>
+        </div>
+        
+        <!-- เอกสารพร้อมรับ -->
+        <div class="col-md-3">
+          <div class="card bg-success text-white h-100">
+            <div class="card-body">
+              <div class="d-flex justify-content-between align-items-center">
+                <div>
+                  <h6 class="card-title mb-0">เอกสารพร้อมรับ</h6>
+                  <h2 class="display-4 mt-2 mb-0"><%= counts.ready %></h2>
+                </div>
+                <i class="fas fa-check-circle fa-3x opacity-50"></i>
+              </div>
+            </div>
+            <div class="card-footer d-flex align-items-center justify-content-between">
+              <a href="/admin/requests?status=ready_for_pickup" class="text-white text-decoration-none">ดูรายละเอียด</a>
+              <i class="fas fa-angle-right"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- คำขอล่าสุด -->
+      <div class="card shadow-sm">
+        <div class="card-header bg-white">
+          <div class="d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">คำขอล่าสุด</h5>
+            <a href="/admin/requests" class="btn btn-sm btn-outline-primary">ดูทั้งหมด</a>
+          </div>
+        </div>
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th>เลขที่อ้างอิง</th>
+                  <th>ประเภทเอกสาร</th>
+                  <th>ชื่อนักศึกษา</th>
+                  <th>วันที่ยื่นคำขอ</th>
+                  <th>สถานะ</th>
+                  <th>การชำระเงิน</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                <% if (latestRequests && latestRequests.length > 0) { %>
+                  <% latestRequests.forEach(function(request) { %>
+                    <tr>
+                      <td><span class="badge bg-primary"><%= request.reference %></span></td>
+                      <td><%= request.documentTypeThai %></td>
+                      <td><%= request.first_name %> <%= request.last_name %></td>
+                      <td><%= request.createdAtThai %></td>
+                      <td>
+                        <% if (request.status === 'pending') { %>
+                          <span class="badge bg-secondary">รอดำเนินการ</span>
+                        <% } else if (request.status === 'processing') { %>
+                          <span class="badge bg-info">กำลังดำเนินการ</span>
+                        <% } else if (request.status === 'awaiting_verification') { %>
+                          <span class="badge bg-warning text-dark">รอตรวจสอบการชำระเงิน</span>
+                        <% } else if (request.status === 'awaiting_payment') { %>
+                          <span class="badge bg-warning text-dark">รอชำระเงิน</span>
+                        <% } else if (request.status === 'ready_for_pickup') { %>
+                          <span class="badge bg-success">พร้อมให้รับเอกสาร</span>
+                        <% } else if (request.status === 'shipped') { %>
+                          <span class="badge bg-success">จัดส่งแล้ว</span>
+                        <% } else if (request.status === 'completed') { %>
+                          <span class="badge bg-success">เสร็จสิ้น</span>
+                        <% } else if (request.status === 'rejected') { %>
+                          <span class="badge bg-danger">ปฏิเสธคำขอ</span>
+                        <% } else if (request.status === 'cancelled') { %>
+                          <span class="badge bg-danger">ยกเลิก</span>
+                        <% } else { %>
+                          <span class="badge bg-secondary"><%= request.statusThai %></span>
+                        <% } %>
+                      </td>
+                      <td>
+                        <% if (request.payment_status === 'paid') { %>
+                          <span class="badge bg-success">ชำระแล้ว</span>
+                        <% } else if (request.payment_status === 'pending') { %>
+                          <span class="badge bg-warning text-dark">รอชำระเงิน</span>
+                        <% } else if (request.payment_status === 'pending_verification') { %>
+                          <span class="badge bg-warning text-dark">รอตรวจสอบ</span>
+                        <% } else if (request.payment_status === 'rejected') { %>
+                          <span class="badge bg-danger">ไม่อนุมัติ</span>
+                        <% } else if (request.payment_status === 'not_required') { %>
+                          <span class="badge bg-secondary">ไม่มีค่าใช้จ่าย</span>
+                        <% } %>
+                      </td>
+                      <td>
+                        <a href="/admin/request/<%= request.id %>" class="btn btn-sm btn-outline-primary">
+                          <i class="fas fa-eye"></i> รายละเอียด
+                        </a>
+                      </td>
+                    </tr>
+                  <% }); %>
+                <% } else { %>
+                  <tr>
+                    <td colspan="7" class="text-center py-3">ไม่พบข้อมูลคำ
