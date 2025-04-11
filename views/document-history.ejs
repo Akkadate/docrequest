@@ -1,0 +1,227 @@
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-10">
+      <!-- ส่วนหัว -->
+      <div class="d-flex align-items-center justify-content-between mb-4">
+        <h2><i class="fas fa-history me-2"></i> ประวัติการขอเอกสาร</h2>
+        <a href="/student/main-menu" class="btn btn-outline-secondary">
+          <i class="fas fa-arrow-left me-2"></i> กลับสู่เมนูหลัก
+        </a>
+      </div>
+      
+      <div class="card shadow-sm mb-4">
+        <div class="card-header bg-light">
+          <div class="d-flex justify-content-between align-items-center">
+            <h4 class="card-title mb-0">รายการคำขอเอกสารทั้งหมด</h4>
+            <a href="/student/select-document" class="btn btn-primary btn-sm">
+              <i class="fas fa-plus me-1"></i> ขอเอกสารใหม่
+            </a>
+          </div>
+        </div>
+        <div class="card-body">
+          <% if (requests && requests.length > 0) { %>
+            <!-- ตัวกรองและค้นหา -->
+            <div class="mb-4">
+              <div class="row g-2">
+                <div class="col-md-4">
+                  <input type="text" id="searchRequest" class="form-control" placeholder="ค้นหา...">
+                </div>
+                <div class="col-md-3">
+                  <select id="filterStatus" class="form-select">
+                    <option value="">- ทุกสถานะ -</option>
+                    <option value="pending">รอดำเนินการ</option>
+                    <option value="processing">กำลังดำเนินการ</option>
+                    <option value="ready_for_pickup">พร้อมให้รับ</option>
+                    <option value="shipped">จัดส่งแล้ว</option>
+                    <option value="completed">เสร็จสิ้น</option>
+                    <option value="rejected">ถูกปฏิเสธ</option>
+                    <option value="cancelled">ยกเลิก</option>
+                  </select>
+                </div>
+                <div class="col-md-3">
+                  <select id="filterDocType" class="form-select">
+                    <option value="">- ทุกประเภทเอกสาร -</option>
+                    <option value="transcript">ใบแสดงผลการเรียน</option>
+                    <option value="certificate">หนังสือรับรองการเป็นนักศึกษา</option>
+                    <option value="graduation">หนังสือรับรองสำเร็จการศึกษา</option>
+                    <option value="enrollment">คำร้องขอลงทะเบียน</option>
+                    <option value="general">คำร้องทั่วไป</option>
+                  </select>
+                </div>
+                <div class="col-md-2">
+                  <button id="resetFilter" class="btn btn-outline-secondary w-100">รีเซ็ต</button>
+                </div>
+              </div>
+            </div>
+            
+            <!-- ตารางแสดงประวัติ -->
+            <div class="table-responsive">
+              <table class="table table-hover" id="requestHistoryTable">
+                <thead class="table-light">
+                  <tr>
+                    <th>เลขที่อ้างอิง</th>
+                    <th>ประเภทเอกสาร</th>
+                    <th>วันที่ขอ</th>
+                    <th>สถานะ</th>
+                    <th class="text-end">ดำเนินการ</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% requests.forEach(function(request) { %>
+                    <tr data-status="<%= request.status %>" data-document-type="<%= request.document_type %>">
+                      <td><%= request.reference %></td>
+                      <td><%= request.documentTypeThai %></td>
+                      <td><%= request.createdAtThai %></td>
+                      <td>
+                        <span class="badge <%= 
+                          request.status === 'completed' ? 'bg-success' : 
+                          request.status === 'rejected' ? 'bg-danger' : 
+                          request.status === 'processing' ? 'bg-info' : 
+                          request.status === 'ready_for_pickup' ? 'bg-primary' : 
+                          request.status === 'shipped' ? 'bg-secondary' : 
+                          request.status === 'cancelled' ? 'bg-secondary' : 
+                          'bg-warning text-dark' 
+                        %>">
+                          <%= request.statusThai %>
+                        </span>
+                      </td>
+                      <td class="text-end">
+                        <div class="btn-group btn-group-sm" role="group">
+                          <a href="/student/track-status?ref=<%= request.reference %>" class="btn btn-outline-primary">
+                            <i class="fas fa-search"></i>
+                          </a>
+                          <% if (request.status === 'pending' && request.payment_status === 'pending' && request.total_fee > 0) { %>
+                            <a href="/student/payment/<%= request.reference %>" class="btn btn-outline-success" title="ชำระเงิน">
+                              <i class="fas fa-credit-card"></i>
+                            </a>
+                          <% } %>
+                          <a href="/student/duplicate-request/<%= request.id %>" class="btn btn-outline-secondary" title="ขอซ้ำ">
+                            <i class="fas fa-copy"></i>
+                          </a>
+                        </div>
+                      </td>
+                    </tr>
+                  <% }); %>
+                </tbody>
+              </table>
+            </div>
+            
+            <!-- ข้อความว่างกรณีไม่มีข้อมูลที่กรอง -->
+            <div id="noDataMessage" class="text-center py-5 d-none">
+              <i class="fas fa-search fa-3x mb-3 text-muted"></i>
+              <p class="text-muted">ไม่พบข้อมูลที่ตรงกับการค้นหา</p>
+            </div>
+            
+          <% } else { %>
+            <!-- กรณีไม่มีประวัติ -->
+            <div class="text-center py-5">
+              <i class="fas fa-file-alt fa-3x mb-3 text-muted"></i>
+              <h5 class="text-muted">ยังไม่มีประวัติการขอเอกสาร</h5>
+              <p class="text-muted mb-4">คุณยังไม่เคยขอเอกสารใดๆ ในระบบ</p>
+              <a href="/student/select-document" class="btn btn-primary">
+                <i class="fas fa-plus me-2"></i> ขอเอกสารใหม่
+              </a>
+            </div>
+          <% } %>
+        </div>
+      </div>
+      
+      <!-- คำแนะนำ -->
+      <div class="card shadow-sm">
+        <div class="card-header bg-light">
+          <h4 class="card-title mb-0">คำแนะนำการใช้งาน</h4>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-6">
+              <h5><i class="fas fa-info-circle me-2"></i> การใช้งานประวัติ</h5>
+              <ul class="small">
+                <li>คลิก <i class="fas fa-search"></i> เพื่อดูรายละเอียดและติดตามสถานะคำขอ</li>
+                <li>คลิก <i class="fas fa-credit-card"></i> เพื่อไปยังหน้าชำระเงิน (สำหรับคำขอที่ยังไม่ได้ชำระเงิน)</li>
+                <li>คลิก <i class="fas fa-copy"></i> เพื่อสร้างคำขอใหม่โดยใช้ข้อมูลจากคำขอเดิม</li>
+                <li>ใช้ช่องค้นหาและตัวกรองเพื่อค้นหาคำขอที่ต้องการ</li>
+              </ul>
+            </div>
+            <div class="col-md-6">
+              <h5><i class="fas fa-exclamation-circle me-2"></i> ข้อควรทราบ</h5>
+              <ul class="small">
+                <li>ประวัติการขอเอกสารจะแสดงเฉพาะคำขอที่คุณเป็นผู้ยื่นเท่านั้น</li>
+                <li>คำขอที่มีสถานะ "เสร็จสิ้น" หมายถึงคำขอที่ได้รับการดำเนินการเรียบร้อยแล้ว</li>
+                <li>คุณสามารถขอเอกสารซ้ำได้ตลอดเวลาโดยการคลิกที่ปุ่ม "ขอซ้ำ"</li>
+                <li>คำขอที่ถูกยกเลิกจะยังคงแสดงอยู่ในประวัติ แต่ไม่สามารถดำเนินการต่อได้</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('searchRequest');
+    const filterStatus = document.getElementById('filterStatus');
+    const filterDocType = document.getElementById('filterDocType');
+    const resetButton = document.getElementById('resetFilter');
+    const tableRows = document.querySelectorAll('#requestHistoryTable tbody tr');
+    const noDataMessage = document.getElementById('noDataMessage');
+    
+    // ฟังก์ชันตัวกรอง
+    function filterTable() {
+      const searchTerm = searchInput.value.toLowerCase();
+      const statusFilter = filterStatus.value;
+      const docTypeFilter = filterDocType.value;
+      
+      let visibleRows = 0;
+      
+      tableRows.forEach(row => {
+        const rowText = row.textContent.toLowerCase();
+        const rowStatus = row.getAttribute('data-status');
+        const rowDocType = row.getAttribute('data-document-type');
+        
+        // ตรวจสอบเงื่อนไขการกรอง
+        const matchesSearch = !searchTerm || rowText.includes(searchTerm);
+        const matchesStatus = !statusFilter || rowStatus === statusFilter;
+        const matchesDocType = !docTypeFilter || rowDocType === docTypeFilter;
+        
+        // แสดงหรือซ่อนแถว
+        if (matchesSearch && matchesStatus && matchesDocType) {
+          row.style.display = '';
+          visibleRows++;
+        } else {
+          row.style.display = 'none';
+        }
+      });
+      
+      // แสดง/ซ่อนข้อความไม่พบข้อมูล
+      if (visibleRows === 0 && tableRows.length > 0) {
+        noDataMessage.classList.remove('d-none');
+      } else {
+        noDataMessage.classList.add('d-none');
+      }
+    }
+    
+    // เพิ่ม event listeners
+    if (searchInput) {
+      searchInput.addEventListener('input', filterTable);
+    }
+    
+    if (filterStatus) {
+      filterStatus.addEventListener('change', filterTable);
+    }
+    
+    if (filterDocType) {
+      filterDocType.addEventListener('change', filterTable);
+    }
+    
+    if (resetButton) {
+      resetButton.addEventListener('click', function() {
+        if (searchInput) searchInput.value = '';
+        if (filterStatus) filterStatus.value = '';
+        if (filterDocType) filterDocType.value = '';
+        filterTable();
+      });
+    }
+  });
+</script>
