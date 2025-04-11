@@ -1,0 +1,150 @@
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-10">
+      <!-- ส่วนหัว -->
+      <div class="d-flex align-items-center justify-content-between mb-4">
+        <h2><i class="fas fa-file-alt me-2"></i> เลือกประเภทเอกสาร</h2>
+        <a href="/student/main-menu" class="btn btn-outline-secondary">
+          <i class="fas fa-arrow-left me-2"></i> กลับสู่เมนูหลัก
+        </a>
+      </div>
+      
+      <!-- คำอธิบาย -->
+      <div class="alert alert-info mb-4">
+        <div class="d-flex">
+          <i class="fas fa-info-circle me-3 fs-4"></i>
+          <div>
+            <p class="mb-0">กรุณาเลือกประเภทเอกสารที่ต้องการขอ แต่ละประเภทจะมีข้อกำหนดและค่าธรรมเนียมที่แตกต่างกัน</p>
+          </div>
+        </div>
+      </div>
+      
+      <!-- รายการประเภทเอกสาร -->
+      <div class="row g-4">
+        <!-- ใบแสดงผลการเรียน -->
+        <div class="col-md-4">
+          <a href="/student/request-form/transcript" class="text-decoration-none">
+            <div class="card document-type-card shadow-sm h-100">
+              <div class="text-center">
+                <i class="fas fa-graduation-cap"></i>
+                <h3 class="mt-3">ใบแสดงผลการเรียน</h3>
+                <p class="text-muted mb-2">(Transcript)</p>
+              </div>
+              <hr>
+              <div class="small">
+                <p><i class="fas fa-money-bill-wave me-2"></i> ค่าธรรมเนียม: 100 บาท/ฉบับ</p>
+                <p><i class="fas fa-clock me-2"></i> ระยะเวลา: 2 วันทำการ</p>
+                <p><i class="fas fa-info-circle me-2"></i> ใบรับรองผลการศึกษาตลอดหลักสูตร</p>
+              </div>
+            </div>
+          </a>
+        </div>
+        
+        <!-- หนังสือรับรองการเป็นนักศึกษา -->
+        <div class="col-md-4">
+          <a href="/student/request-form/certificate" class="text-decoration-none">
+            <div class="card document-type-card shadow-sm h-100">
+              <div class="text-center">
+                <i class="fas fa-user-graduate"></i>
+                <h3 class="mt-3">หนังสือรับรอง</h3>
+                <p class="text-muted mb-2">(การเป็นนักศึกษา)</p>
+              </div>
+              <hr>
+              <div class="small">
+                <p><i class="fas fa-money-bill-wave me-2"></i> ค่าธรรมเนียม: 50 บาท/ฉบับ</p>
+                <p><i class="fas fa-clock me-2"></i> ระยะเวลา: 1-2 วันทำการ</p>
+                <p><i class="fas fa-info-circle me-2"></i> รับรองสถานภาพการเป็นนักศึกษาปัจจุบัน</p>
+              </div>
+            </div>
+          </a>
+        </div>
+        
+        <!-- หนังสือรับรองสำเร็จการศึกษา -->
+        <div class="col-md-4">
+          <a href="/student/request-form/graduation" class="text-decoration-none">
+            <div class="card document-type-card shadow-sm h-100">
+              <div class="text-center">
+                <i class="fas fa-award"></i>
+                <h3 class="mt-3">หนังสือรับรอง</h3>
+                <p class="text-muted mb-2">(สำเร็จการศึกษา)</p>
+              </div>
+              <hr>
+              <div class="small">
+                <p><i class="fas fa-money-bill-wave me-2"></i> ค่าธรรมเนียม: 50 บาท/ฉบับ</p>
+                <p><i class="fas fa-clock me-2"></i> ระยะเวลา: 3 วันทำการ</p>
+                <p><i class="fas fa-info-circle me-2"></i> รับรองการสำเร็จการศึกษาแล้ว</p>
+              </div>
+            </div>
+          </a>
+        </div>
+        
+        <!-- คำร้องขอลงทะเบียน -->
+        <div class="col-md-4">
+          <a href="/student/request-form/enrollment" class="text-decoration-none">
+            <div class="card document-type-card shadow-sm h-100">
+              <div class="text-center">
+                <i class="fas fa-clipboard-list"></i>
+                <h3 class="mt-3">คำร้องขอลงทะเบียน</h3>
+                <p class="text-muted mb-2">(Enrollment Request)</p>
+              </div>
+              <hr>
+              <div class="small">
+                <p><i class="fas fa-money-bill-wave me-2"></i> ค่าธรรมเนียม: 20 บาท/ฉบับ</p>
+                <p><i class="fas fa-clock me-2"></i> ระยะเวลา: 3-5 วันทำการ</p>
+                <p><i class="fas fa-info-circle me-2"></i> สำหรับคำร้องที่ไม่เข้าข่ายประเภทอื่นๆ</p>
+              </div>
+            </div>
+          </a>
+        </div>
+      </div>
+      
+      <!-- คำแนะนำเพิ่มเติม -->
+      <div class="card shadow-sm mt-4">
+        <div class="card-header bg-light">
+          <h4 class="mb-0">คำแนะนำในการขอเอกสาร</h4>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-6">
+              <h5><i class="fas fa-info-circle me-2"></i> ข้อควรทราบ</h5>
+              <ul class="small">
+                <li>เอกสารที่ออกโดยสำนักทะเบียนจะมีลายเซ็นของนายทะเบียนและอธิการบดี</li>
+                <li>เอกสารภาษาอังกฤษจะมีค่าธรรมเนียมเพิ่มขึ้นจากราคาปกติ 50 บาท/ฉบับ</li>
+                <li>นักศึกษาสามารถเลือกรับเอกสารได้ 3 ช่องทาง: มารับด้วยตนเอง, จัดส่งทางไปรษณีย์ (มีค่าใช้จ่ายเพิ่มเติม) หรือรับเอกสารดิจิทัล (เฉพาะบางประเภท)</li>
+                <li>กรุณาตรวจสอบข้อมูลส่วนตัวให้ถูกต้องก่อนการขอเอกสาร</li>
+              </ul>
+            </div>
+            <div class="col-md-6">
+              <h5><i class="fas fa-file-alt me-2"></i> เอกสารที่ต้องเตรียม</h5>
+              <ul class="small">
+                <li><strong>สำหรับนักศึกษาปัจจุบัน:</strong> ไม่ต้องแนบเอกสารเพิ่มเติม</li>
+                <li><strong>สำหรับผู้สำเร็จการศึกษา:</strong> สำเนาบัตรประชาชน</li>
+                <li><strong>กรณีมอบให้ผู้อื่นมารับแทน:</strong> หนังสือมอบอำนาจและสำเนาบัตรประชาชนของผู้มอบและผู้รับมอบ</li>
+                <li><strong>กรณีขอเอกสารเพื่อใช้ต่างประเทศ:</strong> อาจต้องผ่านการรับรองจากกระทรวงการต่างประเทศ (กรุณาระบุในหมายเหตุ)</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>ำการ</p>
+                <p><i class="fas fa-info-circle me-2"></i> สำหรับขอลงทะเบียนล่าช้า/เพิ่ม-ถอนรายวิชา</p>
+              </div>
+            </div>
+          </a>
+        </div>
+        
+        <!-- คำร้องทั่วไป -->
+        <div class="col-md-4">
+          <a href="/student/request-form/general" class="text-decoration-none">
+            <div class="card document-type-card shadow-sm h-100">
+              <div class="text-center">
+                <i class="fas fa-file-signature"></i>
+                <h3 class="mt-3">คำร้องทั่วไป</h3>
+                <p class="text-muted mb-2">(General Request)</p>
+              </div>
+              <hr>
+              <div class="small">
+                <p><i class="fas fa-money-bill-wave me-2"></i> ค่าธรรมเนียม: 20 บาท/ฉบับ</p>
+                <p><i class="fas fa-clock me-2"></i> ระยะเวลา: 3-5 วันท
