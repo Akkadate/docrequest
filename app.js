@@ -85,8 +85,19 @@ app.use('/documents', require('./routes/documents'));
 
 // หน้าแรก
 app.get('/', (req, res) => {
+  // ตรวจสอบว่าเข้าสู่ระบบแล้วหรือไม่
+  if (req.isAuthenticated()) {
+    if (req.user.isStaff) {
+      return res.redirect('/admin/dashboard');
+    } else {
+      return res.redirect('/student/main-menu');
+    }
+  }
+  
+  // ถ้ายังไม่ได้เข้าสู่ระบบ แสดงหน้า login
   res.render('login', {
-    title: 'เข้าสู่ระบบ - ระบบขอเอกสารออนไลน์สำหรับนักศึกษา'
+    title: 'เข้าสู่ระบบ - ระบบขอเอกสารออนไลน์สำหรับนักศึกษา',
+    layout: 'layouts/auth'
   });
 });
 
