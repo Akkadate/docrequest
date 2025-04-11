@@ -122,5 +122,94 @@ const sendNewRequestNotification = async (staffEmails, requestData) => {
       to: staffEmails,
       subject: `[แจ้งเตือน] มีคำขอเอกสารใหม่ #${requestData.reference}`,
       html: `
+         <div style="font-family: 'Sarabun', 'THSarabun', sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2 style="color: #3f51b5;">แจ้งเตือน: มีคำขอเอกสารใหม่</h2>
+          <p>เรียน เจ้าหน้าที่ผู้เกี่ยวข้อง,</p>
+          <p>มีคำขอเอกสารใหม่ในระบบ โดยมีรายละเอียดดังนี้:</p>
+          
+          <div style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; margin: 20px 0;">
+            <p><strong>เลขที่คำขอ:</strong> ${requestData.reference}</p>
+            <p><strong>รหัสนักศึกษา:</strong> ${requestData.studentId}</p>
+            <p><strong>ชื่อ-นามสกุล:</strong> ${requestData.studentName}</p>
+            <p><strong>ประเภทเอกสาร:</strong> ${requestData.documentType}</p>
+            <p><strong>จำนวน:</strong> ${requestData.copies} ฉบับ</p>
+            <p><strong>วิธีรับเอกสาร:</strong> ${requestData.deliveryMethod}</p>
+            <p><strong>วันที่ขอ:</strong> ${requestData.requestDate}</p>
+          </div>
+          
+          <p>กรุณาดำเนินการตรวจสอบและอนุมัติคำขอได้ที่ <a href="${process.env.SITE_URL}/admin/request/${requestData.id}" style="color: #3f51b5;">ระบบจัดการคำขอเอกสาร</a></p>
+          
+          <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; font-size: 0.9em; color: #666;">
+            <p>อีเมลนี้เป็นการแจ้งเตือนอัตโนมัติ กรุณาอย่าตอบกลับ</p>
+            <p>&copy; ${new Date().getFullYear()} มหาวิทยาลัยนอร์กรุงเทพ สงวนลิขสิทธิ์</p>
+          </div>
+        </div>
+      `
+    };
+    
+    const info = await transporter.sendMail(mailOptions);
+    logger.info(`Staff notification email sent: ${info.messageId}`);
+    return true;
+  } catch (error) {
+    logger.error(`Error sending staff notification email: ${error.message}`);
+    return false;
+  }
+};
+
+// ฟังก์ชันส่งอีเมลพร้อมเอกสารดิจิทัล
+const sendDigitalDocument = async (studentEmail, requestData, attachmentPath) => {
+  try {
+    const mailOptions = {
+      from: `"ระบบขอเอกสารออนไลน์" <${process.env.EMAIL_FROM}>`,
+      to: studentEmail,
+      subject: `เอกสารของคุณพร้อมแล้ว #${requestData.reference}`,
+      html: `
         <div style="font-family: 'Sarabun', 'THSarabun', sans-serif; max-width: 600px; margin: 0 auto;">
-          <h2 style="color: #3f51b5;">แ
+          <h2 style="color: #3f51b5;">เอกสารของคุณพร้อมแล้ว</h2>
+          <p>เรียน นักศึกษา,</p>
+          <p>เอกสารที่คุณขอไว้พร้อมแล้ว โดยมีรายละเอียดดังนี้:</p>
+          
+          <div style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; margin: 20px 0;">
+            <p><strong>เลขที่คำขอ:</strong> ${requestData.reference}</p>
+            <p><strong>ประเภทเอกสาร:</strong> ${requestData.documentType}</p>
+            <p><strong>จำนวน:</strong> ${requestData.copies} ฉบับ</p>
+            <p><strong>วันที่เสร็จสิ้น:</strong> ${requestData.completedDate}</p>
+          </div>
+          
+          <p>เอกสารของคุณได้แนบมาพร้อมกับอีเมลฉบับนี้ กรุณาตรวจสอบไฟล์แนบ</p>
+          <p><strong>หมายเหตุ:</strong> เอกสารดิจิทัลนี้ถือเป็นเอกสารทางการที่ออกโดยมหาวิทยาลัยนอร์กรุงเทพ</p>
+          
+          <p>หากมีข้อสงสัย กรุณาติดต่อสำนักทะเบียนและประมวลผลการศึกษา</p>
+          <p>โทร: 02-XXX-XXXX</p>
+          <p>อีเมล: registrar@nordbkk.ac.th</p>
+          
+          <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; font-size: 0.9em; color: #666;">
+            <p>อีเมลนี้เป็นการแจ้งเตือนอัตโนมัติ กรุณาอย่าตอบกลับ</p>
+            <p>&copy; ${new Date().getFullYear()} มหาวิทยาลัยนอร์กรุงเทพ สงวนลิขสิทธิ์</p>
+          </div>
+        </div>
+      `,
+      attachments: [
+        {
+          filename: `${requestData.documentType}_${requestData.reference}.pdf`,
+          path: attachmentPath
+        }
+      ]
+    };
+    
+    const info = await transporter.sendMail(mailOptions);
+    logger.info(`Digital document email sent: ${info.messageId}`);
+    return true;
+  } catch (error) {
+    logger.error(`Error sending digital document email: ${error.message}`);
+    return false;
+  }
+};
+
+module.exports = {
+  verifyConnection,
+  sendRequestConfirmation,
+  sendStatusUpdate,
+  sendNewRequestNotification,
+  sendDigitalDocument
+};
