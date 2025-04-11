@@ -255,4 +255,376 @@ sudo apt install redis-server
 sudo systemctl enable redis-server
 ```
 
-3. ติดตั้งแ
+3. ติดตั้งแพ็คเกจ Redis สำหรับ Node.js:
+```bash
+npm install redis connect-redis --save
+```
+
+4. แก้ไขไฟล์ `app.js` เพื่อใช้ Redis กับ session:
+```javascript
+const redis = require('redis');
+const connectRedis = require('connect-redis');
+const RedisStore = connectRedis(session);
+
+// สร้าง Redis client
+const redisClient = redis.createClient({
+  host: 'localhost',
+  port: 6379
+});
+
+// ตั้งค่า session ให้ใช้ Redis
+app.use(session({
+  store: new RedisStore({ client: redisClient }),
+  secret: process.env.SESSION_SECRET || 'secret',
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    maxAge: 3600000, // 1 ชั่วโมง
+    secure: process.env.NODE_ENV === 'production',
+    httpOnly: true
+  }
+}));
+```
+
+### 4.2 การปรับแต่งประสิทธิภาพ Nginx
+แก้ไขไฟล์คอนฟิก Nginx เพื่อเพิ่มประสิทธิภาพ:
+```nginx
+server {
+    listen 80;
+    server_name docs.devapp.cc;
+
+    # การเพิ่มประสิทธิภาพการเชื่อมต่อ
+    keepalive_timeout 65;
+    keepalive_requests 100;
+    
+    # การแคชไฟล์สถิต
+    location ~* \.(jpg|jpeg|png|gif|ico|css|js)$ {
+        expires 30d;
+        add_header Cache-Control "public, no-transform";
+    }
+    
+    # การส่งไฟล์แบบบีบอัด
+    gzip on;
+    gzip_comp_level 5;
+    gzip_min_length 256;
+    gzip_proxied any;
+    gzip_vary on;
+    gzip_types
+        application/javascript
+        application/json
+        application/x-javascript
+        text/css
+        text/javascript
+        text/plain;
+    
+    location / {
+        proxy_pass http://localhost:4100;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+```
+
+### 4.3 การปรับแต่ง Node.js
+แก้ไขไฟล์ `server.js` เพื่อใช้ประโยชน์จากหลาย CPU:
+```javascript
+const cluster = require('cluster');
+const numCPUs = require('os').cpus().length;
+const app = require('./app');
+const { logger } = require('./utils/logger');
+
+// กำหนดพอร์ต
+const PORT = process.env.PORT || 4100;
+
+// ใช้ cluster เพื่อเพิ่มประสิทธิภาพในการใช้งานหลาย CPU
+if (cluster.isMaster && process.env.NODE_ENV === 'production') {
+  logger.info(`Master ${process.pid} is running`);
+
+  // Fork workers
+  for (let i = 0; i < numCPUs; i++) {
+    cluster.fork();
+  }
+
+  cluster.on('exit', (worker, code, signal) => {
+    logger.warn(`Worker ${worker.process.pid} died. Restarting...`);
+    cluster.fork();
+  });
+} else {
+  // Workers can share any TCP connection
+  app.listen(PORT, () => {
+    logger.info(`Worker ${process.pid} started. Server running on port ${PORT}`);
+    console.log(`Server running on port ${PORT}`);
+  });
+}
+```
+
+## 5. การทดสอบระบบ
+
+### 5.1 การทดสอบหน่วย (Unit Testing)
+1. ติดตั้งเครื่องมือสำหรับการทดสอบ:
+```bash
+npm install --save-dev jest supertest
+```
+
+2. สร้างโฟลเดอร์และไฟล์สำหรับการทดสอบ:
+```bash
+mkdir -p tests/unit tests/integration
+```
+
+3. สร้างไฟล์ `tests/unit/request.test.js` สำหรับทดสอบโมเดล Request:
+```javascript
+const Request = require('../../models/Request');
+const db = require('../../config/database');
+
+// Mock ฐานข้อมูล
+jest.mock('../../config/database');
+
+describe('Request Model', () => {
+  test('should create a new request', async () => {
+    // ข้อมูลจำลอง
+    const mockRequestData = {
+      studentId: 1,
+      documentType: 'transcript',
+      copies: 2,
+      purpose: 'สมัครงาน',
+      deliveryMethod: 'pickup'
+    };
+    
+    // ผลลัพธ์ที่คาดหวัง
+    const mockResult = {
+      rows: [{
+        id: 1,
+        student_id: 1,
+        document_type: 'transcript',
+        copies: 2,
+        purpose: 'สมัครงาน',
+        delivery_method: 'pickup',
+        reference: 'REQ21010001'
+      }]
+    };
+    
+    // Mock การเรียกใช้ query
+    db.query.mockResolvedValueOnce(mockResult);
+    db.query.mockResolvedValueOnce({ rows: [] }); // สำหรับการบันทึกประวัติสถานะ
+    
+    // ทดสอบฟังก์ชัน create
+    const result = await Request.create(mockRequestData);
+    
+    // ตรวจสอบผลลัพธ์
+    expect(result).toEqual(mockResult.rows[0]);
+    expect(db.query).toHaveBeenCalledTimes(2);
+  });
+});
+```
+
+### 5.2 การทดสอบบูรณาการ (Integration Testing)
+สร้างไฟล์ `tests/integration/auth.test.js` สำหรับทดสอบการเข้าสู่ระบบ:
+```javascript
+const request = require('supertest');
+const app = require('../../app');
+const db = require('../../config/database');
+
+describe('Authentication Routes', () => {
+  beforeAll(async () => {
+    // เตรียมข้อมูลทดสอบ
+    await db.query(`
+      INSERT INTO students (student_id, password, first_name, last_name, email)
+      VALUES ('testuser', '$2a$10$1234567890abcdefghijk.1234567890abcdefghijk', 'Test', 'User', 'test@example.com')
+      ON CONFLICT (student_id) DO NOTHING
+    `);
+  });
+  
+  afterAll(async () => {
+    // ทำความสะอาดข้อมูลทดสอบ
+    await db.query(`
+      DELETE FROM students WHERE student_id = 'testuser'
+    `);
+  });
+  
+  test('should login successfully with correct credentials', async () => {
+    const response = await request(app)
+      .post('/login')
+      .send({
+        studentId: 'testuser',
+        password: 'password123'
+      });
+    
+    expect(response.statusCode).toBe(302);
+    expect(response.headers.location).toBe('/student/main-menu');
+  });
+  
+  test('should fail login with incorrect credentials', async () => {
+    const response = await request(app)
+      .post('/login')
+      .send({
+        studentId: 'testuser',
+        password: 'wrongpassword'
+      });
+    
+    expect(response.statusCode).toBe(302);
+    expect(response.headers.location).toBe('/login');
+  });
+});
+```
+
+### 5.3 การทดสอบการโหลด (Load Testing)
+1. ติดตั้ง Artillery สำหรับทดสอบการโหลด:
+```bash
+npm install -g artillery
+```
+
+2. สร้างไฟล์ `tests/load/load-test.yml`:
+```yaml
+config:
+  target: "https://docs.devapp.cc"
+  phases:
+    - duration: 60
+      arrivalRate: 5
+      name: "ทดสอบการโหลดปกติ"
+    - duration: 120
+      arrivalRate: 10
+      rampTo: 50
+      name: "ทดสอบการโหลดสูง"
+  defaults:
+    headers:
+      User-Agent: "Artillery Load Test"
+
+scenarios:
+  - name: "ทดสอบการเข้าสู่ระบบและดูหน้าหลัก"
+    flow:
+      - get:
+          url: "/"
+          capture:
+            - selector: "input[name=_csrf]"
+              attr: "value"
+              as: "csrf"
+      - post:
+          url: "/login"
+          headers:
+            Content-Type: "application/x-www-form-urlencoded"
+          form:
+            _csrf: "{{ csrf }}"
+            studentId: "6205001"
+            password: "123456"
+      - get:
+          url: "/student/main-menu"
+```
+
+3. รันการทดสอบการโหลด:
+```bash
+artillery run tests/load/load-test.yml -o tests/load/results.json
+```
+
+4. สร้างรายงาน:
+```bash
+artillery report tests/load/results.json
+```
+
+## 6. การขยายระบบในอนาคต
+
+### 6.1 การเพิ่มระบบวิเคราะห์ข้อมูล
+1. ติดตั้ง Analytics library:
+```bash
+npm install chart.js --save
+```
+
+2. สร้างหน้าแดชบอร์ดวิเคราะห์ข้อมูลสำหรับผู้ดูแลระบบในไฟล์ `views/admin/analytics.ejs`
+3. สร้าง API endpoints สำหรับดึงข้อมูลสถิติ
+
+### 6.2 การเพิ่มระบบแจ้งเตือนผ่าน SMS
+1. ติดตั้ง Twilio SDK:
+```bash
+npm install twilio --save
+```
+
+2. สร้างไฟล์ `utils/smsService.js` สำหรับการส่ง SMS
+
+### 6.3 การพัฒนาแอปพลิเคชันมือถือ
+1. พิจารณาการพัฒนาแอปพลิเคชันมือถือด้วย React Native
+2. ออกแบบ REST API สำหรับเชื่อมต่อกับแอปพลิเคชันมือถือ
+
+## 7. การดูแลรักษาความปลอดภัย
+
+### 7.1 การสแกนช่องโหว่
+1. ติดตั้ง Snyk CLI:
+```bash
+npm install -g snyk
+```
+
+2. ทดสอบความปลอดภัยของแอปพลิเคชัน:
+```bash
+snyk test
+```
+
+### 7.2 การปรับปรุงความปลอดภัย
+1. ติดตั้ง Helmet เพิ่มเติม:
+```bash
+npm install helmet --save
+```
+
+2. ตั้งค่านโยบายความปลอดภัยเพิ่มเติมใน `app.js`:
+```javascript
+// ตั้งค่า Security Headers
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'", 'cdn.jsdelivr.net'],
+      styleSrc: ["'self'", "'unsafe-inline'", 'cdn.jsdelivr.net'],
+      imgSrc: ["'self'", 'data:'],
+      fontSrc: ["'self'", 'fonts.googleapis.com', 'fonts.gstatic.com'],
+    },
+  },
+  referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
+  frameguard: { action: 'deny' },
+  noSniff: true,
+  xssFilter: true,
+  hsts: {
+    maxAge: 31536000,
+    includeSubDomains: true,
+    preload: true
+  }
+}));
+```
+
+### 7.3 การสร้าง Security Response Plan
+1. สร้างไฟล์ `SECURITY.md` ในโปรเจค:
+```markdown
+# นโยบายความปลอดภัย
+
+## การรายงานช่องโหว่
+
+หากคุณพบช่องโหว่ด้านความปลอดภัยในระบบขอเอกสารออนไลน์สำหรับนักศึกษา กรุณาแจ้งให้ทีมความปลอดภัยทราบโดยส่งอีเมลไปที่ security@nordbkk.ac.th
+
+กรุณาระบุรายละเอียดต่อไปนี้:
+- ประเภทของช่องโหว่
+- เส้นทางหรือตำแหน่งของช่องโหว่
+- ขั้นตอนการทำซ้ำ
+- ผลกระทบที่อาจเกิดขึ้น
+
+## นโยบายการเปิดเผย
+ทีมความปลอดภัยจะตอบกลับรายงานของคุณภายใน 48 ชั่วโมง และจะให้การอัพเดทเป็นระยะเกี่ยวกับความคืบหน้าในการแก้ไขช่องโหว่
+```
+
+## 8. การสนับสนุนและช่วยเหลือผู้ใช้
+
+### 8.1 การสร้างเอกสารคู่มือสำหรับผู้ใช้
+1. สร้างคู่มือการใช้งานสำหรับนักศึกษา
+2. สร้างคู่มือการใช้งานสำหรับเจ้าหน้าที่
+
+### 8.2 การสร้างระบบช่วยเหลือ
+1. เพิ่มหน้า FAQ ในระบบ
+2. สร้างระบบตั๋วสำหรับรายงานปัญหาและขอความช่วยเหลือ
+
+### 8.3 การฝึกอบรม
+1. จัดการฝึกอบรมสำหรับนักศึกษา
+2. จัดการฝึกอบรมสำหรับเจ้าหน้าที่และผู้ดูแลระบบ
+
+## สรุป
+การนำระบบขอเอกสารออนไลน์สำหรับนักศึกษาไปใช้งานจริงต้องคำนึงถึงปัจจัยหลายด้าน ทั้งด้านเทคนิค ความปลอดภัย ประสิทธิภาพ และการสนับสนุนผู้ใช้ แนวทางนี้ได้ครอบคลุมขั้นตอนสำคัญต่างๆ ที่ควรดำเนินการเพื่อให้การนำระบบไปใช้งานเป็นไปอย่างราบรื่นและประสบความสำเร็จ
