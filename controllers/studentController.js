@@ -199,7 +199,8 @@ exports.getDocumentHistory = async (req, res) => {
     res.render('document-history', {
       title: 'ประวัติการขอเอกสาร - ระบบขอเอกสารออนไลน์',
       user: req.user,
-      requests: formattedRequests
+      requests: formattedRequests,
+      currentPath: '/student/document-history'
     });
   } catch (error) {
     logger.error(`Error fetching document history: ${error.message}`);
