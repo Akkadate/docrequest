@@ -15,15 +15,15 @@ const studentController = require('../controllers/studentController');
 router.get('/main-menu', ensureAuthenticated, ensureStudent, studentController.getMainMenu);
 
 router.get('/profile', ensureAuthenticated, ensureStudent, studentController.getProfile);
-router.post('/profile', ensureAuthenticated, ensureStudent, validateProfile, studentController.updateProfile);
+//router.post('/profile', ensureAuthenticated, ensureStudent, validateProfile, studentController.updateProfile);
 router.get('/select-document', ensureAuthenticated, ensureStudent, studentController.getSelectDocument);
 router.get('/request-form/:type', ensureAuthenticated, ensureStudent, studentController.getRequestForm);
-router.post('/submit-request', ensureAuthenticated, ensureStudent, upload.array('attachments'), validateDocumentRequest, studentController.submitRequest);
+//router.post('/submit-request', ensureAuthenticated, ensureStudent, upload.array('attachments'), validateDocumentRequest, studentController.submitRequest);
 router.get('/document-history', ensureAuthenticated, ensureStudent, studentController.getDocumentHistory);
 router.get('/track-status', ensureAuthenticated, ensureStudent, studentController.getTrackStatus);
 router.get('/payment/:reference', ensureAuthenticated, ensureStudent, studentController.getPaymentPage);
-router.post('/payment/:reference', ensureAuthenticated, ensureStudent, upload.single('paymentSlip'), validatePayment, studentController.submitPayment);
-router.post('/cancel-request/:id', ensureAuthenticated, ensureStudent, validateCancellation, studentController.cancelRequest);
+//router.post('/payment/:reference', ensureAuthenticated, ensureStudent, upload.single('paymentSlip'), validatePayment, studentController.submitPayment);
+//router.post('/cancel-request/:id', ensureAuthenticated, ensureStudent, validateCancellation, studentController.cancelRequest);
 router.get('/duplicate-request/:id', ensureAuthenticated, ensureStudent, studentController.duplicateRequest);
 //-------------------------------------------------------------------------
 
