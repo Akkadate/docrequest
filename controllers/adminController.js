@@ -274,17 +274,16 @@ exports.changePassword = async (req, res) => {
 /**
  * แสดงหน้าแดชบอร์ดเจ้าหน้าที่
  */
+// ใน adminController.js - ฟังก์ชัน getDashboard
 exports.getDashboard = async (req, res) => {
   try {
-    
-    // ดึงจำนวนคำขอตามสถานะ
+    // ดึงจำนวนคำขอตามสถานะ (เรียกใช้แบบปกติ)
     const pendingCount = await Request.count({ status: 'pending' });
     const processingCount = await Request.count({ status: 'processing' });
     const readyCount = await Request.count({ status: 'ready_for_pickup' });
     const verificationCount = await Request.count({ status: 'awaiting_verification' });
     
-    
- // เปลี่ยนวิธีการนับคำขอในวันนี้โดยใช้ SQL โดยตรง
+    // เปลี่ยนวิธีการนับคำขอในวันนี้โดยใช้ SQL โดยตรง
     const todayQuery = `
       SELECT COUNT(*) as count
       FROM document_requests
@@ -292,7 +291,7 @@ exports.getDashboard = async (req, res) => {
     `;
     const todayResult = await db.query(todayQuery);
     const todayCount = parseInt(todayResult.rows[0].count);
-
+    
     // ดึงคำขอล่าสุด 10 รายการ
     const latestRequests = await Request.findAll({ limit: 10 });
     
