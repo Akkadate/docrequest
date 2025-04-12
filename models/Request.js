@@ -374,13 +374,43 @@ class Request {
       }
       
       if (filters.startDate) {
-        whereClauses.push(`r.created_at >= $${paramIndex++}`);
-        queryParams.push(filters.startDate);
+        // แก้ไขจุดที่มีปัญหา: แปลงวันที่ให้อยู่ในรูปแบบที่ PostgreSQL เข้าใจ
+        let startDate;
+        if (typeof filters.startDate === 'number') {
+          // ถ้าเป็น timestamp ให้แปลงเป็น Date
+          startDate = new Date(filters.startDate);
+        } else if (filters.startDate instanceof Date) {
+          startDate = filters.startDate;
+        } else {
+          // ถ้าเป็นรูปแบบอื่นๆ ให้พยายามแปลงเป็น Date
+          startDate = new Date(filters.startDate);
+        }
+        
+        // แปลงเป็น YYYY-MM-DD สำหรับใช้กับ PostgreSQL
+        const formattedStartDate = startDate.toISOString().split('T')[0];
+        
+        whereClauses.push(`DATE(r.created_at) >= $${paramIndex++}`);
+        queryParams.push(formattedStartDate);
       }
       
       if (filters.endDate) {
-        whereClauses.push(`r.created_at <= $${paramIndex++}`);
-        queryParams.push(filters.endDate);
+        // แก้ไขจุดที่มีปัญหา: แปลงวันที่ให้อยู่ในรูปแบบที่ PostgreSQL เข้าใจ
+        let endDate;
+        if (typeof filters.endDate === 'number') {
+          // ถ้าเป็น timestamp ให้แปลงเป็น Date
+          endDate = new Date(filters.endDate);
+        } else if (filters.endDate instanceof Date) {
+          endDate = filters.endDate;
+        } else {
+          // ถ้าเป็นรูปแบบอื่นๆ ให้พยายามแปลงเป็น Date
+          endDate = new Date(filters.endDate);
+        }
+        
+        // แปลงเป็น YYYY-MM-DD สำหรับใช้กับ PostgreSQL
+        const formattedEndDate = endDate.toISOString().split('T')[0];
+        
+        whereClauses.push(`DATE(r.created_at) <= $${paramIndex++}`);
+        queryParams.push(formattedEndDate);
       }
       
       if (filters.searchTerm) {
@@ -421,21 +451,6 @@ class Request {
       throw error;
     }
   }
-
-  static async countByDate(date) {
-  try {
-    const query = `
-      SELECT COUNT(*) as count 
-      FROM document_requests 
-      WHERE DATE(created_at) = $1
-    `;
-    const result = await db.query(query, [date]);
-    return parseInt(result.rows[0].count);
-  } catch (error) {
-    logger.error(`Error counting requests by date: ${error.message}`);
-    throw error;
-  }
-}
   
   /**
    * นับจำนวนคำขอตามเงื่อนไข
@@ -470,29 +485,44 @@ class Request {
         queryParams.push(filters.paymentStatus);
       }
       
-  //    if (filters.startDate) {
-  //      whereClauses.push(`r.created_at >= $${paramIndex++}`);
- //       queryParams.push(filters.startDate);
-//      }
-
-
-          // แก้ไขส่วนนี้ - จัดการกับวันที่อย่างถูกต้อง
-    if (filters.startDate) {
-      // แทนที่จะใช้ค่า startDate โดยตรง ให้แปลงเป็นวันที่ที่ PostgreSQL เข้าใจ
-      const dateObj = new Date(filters.startDate);
-      const formattedDate = dateObj.toISOString().split('T')[0]; // 'YYYY-MM-DD'
-      
-      query += ' AND DATE(created_at) = $' + (queryParams.length + 1);
-      queryParams.push(formattedDate);
-
-      const result = await db.query(query, queryParams);
-      return parseInt(result.rows[0].count);
-    }
-    
+      if (filters.startDate) {
+        // แก้ไขจุดที่มีปัญหา: แปลงวันที่ให้อยู่ในรูปแบบที่ PostgreSQL เข้าใจ
+        let startDate;
+        if (typeof filters.startDate === 'number') {
+          // ถ้าเป็น timestamp ให้แปลงเป็น Date
+          startDate = new Date(filters.startDate);
+        } else if (filters.startDate instanceof Date) {
+          startDate = filters.startDate;
+        } else {
+          // ถ้าเป็นรูปแบบอื่นๆ ให้พยายามแปลงเป็น Date
+          startDate = new Date(filters.startDate);
+        }
+        
+        // แปลงเป็น YYYY-MM-DD สำหรับใช้กับ PostgreSQL
+        const formattedStartDate = startDate.toISOString().split('T')[0];
+        
+        whereClauses.push(`DATE(r.created_at) >= $${paramIndex++}`);
+        queryParams.push(formattedStartDate);
+      }
       
       if (filters.endDate) {
-        whereClauses.push(`r.created_at <= $${paramIndex++}`);
-        queryParams.push(filters.endDate);
+        // แก้ไขจุดที่มีปัญหา: แปลงวันที่ให้อยู่ในรูปแบบที่ PostgreSQL เข้าใจ
+        let endDate;
+        if (typeof filters.endDate === 'number') {
+          // ถ้าเป็น timestamp ให้แปลงเป็น Date
+          endDate = new Date(filters.endDate);
+        } else if (filters.endDate instanceof Date) {
+          endDate = filters.endDate;
+        } else {
+          // ถ้าเป็นรูปแบบอื่นๆ ให้พยายามแปลงเป็น Date
+          endDate = new Date(filters.endDate);
+        }
+        
+        // แปลงเป็น YYYY-MM-DD สำหรับใช้กับ PostgreSQL
+        const formattedEndDate = endDate.toISOString().split('T')[0];
+        
+        whereClauses.push(`DATE(r.created_at) <= $${paramIndex++}`);
+        queryParams.push(formattedEndDate);
       }
       
       if (filters.searchTerm) {
@@ -516,6 +546,26 @@ class Request {
       return parseInt(result.rows[0].count);
     } catch (error) {
       logger.error(`Error counting requests: ${error.message}`);
+      throw error;
+    }
+  }
+  
+  /**
+   * นับจำนวนคำขอในวันนี้
+   * @returns {Promise<number>} จำนวนคำขอในวันนี้
+   */
+  static async countToday() {
+    try {
+      const query = `
+        SELECT COUNT(*) 
+        FROM document_requests 
+        WHERE DATE(created_at) = CURRENT_DATE
+      `;
+      
+      const result = await db.query(query);
+      return parseInt(result.rows[0].count);
+    } catch (error) {
+      logger.error(`Error counting today's requests: ${error.message}`);
       throw error;
     }
   }
