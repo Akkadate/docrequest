@@ -18,6 +18,19 @@ const {
 } = require('../utils/emailService');
 const { logger } = require('../utils/logger');
 
+// ในไฟล์ routes/admin.js ---------------------------------
+const { ensureAuthenticated, ensureStaff } = require('../middleware/auth');
+const adminController = require('../controllers/adminController');
+
+// เพิ่ม redirect จาก /admin ไป /admin/dashboard
+router.get('/', ensureAuthenticated, ensureStaff, (req, res) => {
+  res.redirect('/admin/dashboard');
+});
+
+// ตรวจสอบว่ามี route นี้แล้วหรือไม่
+router.get('/dashboard', ensureAuthenticated, ensureStaff, adminController.getDashboard);
+//----------------------------------------------------------------------
+
 // หน้าแดชบอร์ดเจ้าหน้าที่
 router.get('/dashboard', ensureAuthenticated, ensureStaff, async (req, res) => {
   try {
