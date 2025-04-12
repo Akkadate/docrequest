@@ -219,7 +219,8 @@ exports.getTrackStatus = async (req, res) => {
       return res.render('track-status', {
         title: 'ติดตามสถานะคำขอ - ระบบขอเอกสารออนไลน์',
         user: req.user,
-        searchMode: true
+        searchMode: true,
+        currentPath: '/student/track-status'
       });
     }
     
