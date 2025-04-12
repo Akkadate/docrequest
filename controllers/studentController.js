@@ -174,7 +174,7 @@ exports.submitRequest = async (req, res) => {
       },
       fees,
       //-----------------------------------------------------------------
-      currentPath: '/student/submit-request'
+      currentPath: '/student/request-success'
     });
   } catch (error) {
     logger.error(`Error submitting request: ${error.message}`);
