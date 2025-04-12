@@ -172,7 +172,9 @@ exports.submitRequest = async (req, res) => {
         estimatedDays: estimatedTime.days,
         estimatedDate: formatThaiDate(estimatedTime.date)
       },
-      fees
+      fees,
+      //-----------------------------------------------------------------
+      currentPath: '/student/submit-request'
     });
   } catch (error) {
     logger.error(`Error submitting request: ${error.message}`);
