@@ -284,7 +284,7 @@ exports.getDashboard = async (req, res) => {
     const todayCount = await Request.count({ 
       startDate: new Date().setHours(0, 0, 0, 0) 
     });
-    
+
     // ดึงคำขอล่าสุด 10 รายการ
     const latestRequests = await Request.findAll({ limit: 10 });
     
@@ -878,3 +878,10 @@ exports.getReports = async (req, res) => {
         dailyStats
       }
     });
+
+  }catch (error) {
+    logger.error(`Error cancelling request: ${error.message}`);
+    req.flash('error_msg', 'เกิดข้อผิดพลาดในการยกเลิกคำขอ');
+    res.redirect(`/student/track-status?ref=${req.query.ref}`);
+  }
+}
