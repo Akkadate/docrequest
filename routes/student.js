@@ -7,6 +7,14 @@ const db = require('../config/database');
 const { logger } = require('../utils/logger');
 const { forwardAuthenticated } = require('../middleware/auth');
 
+// Add this to your routes/student.js file---------------------------------
+const { ensureAuthenticated, ensureStudent } = require('../middleware/auth');
+const studentController = require('../controllers/studentController');
+// -----------------------------------------
+// Main menu route
+router.get('/main-menu', ensureAuthenticated, ensureStudent, studentController.getMainMenu);
+//-------------------------------------------------------------------------
+
 // หน้าเข้าสู่ระบบนักศึกษา
 router.get('/login', forwardAuthenticated, (req, res) => {
   res.render('login', {
