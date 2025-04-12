@@ -1,0 +1,42 @@
+/student/main-menu
+/student/select-document
+/student/track-status
+/student/profile
+/student/payment/
+/student/duplicate-request/
+/student/document-history
+
+/student/request-form/transcript
+/student/request-form/graduation
+/student/request-form/enrollment
+/student/request-form/general
+
+/admin/requests
+/admin/dashboard
+/admin/student/
+
+/documents/payment-qr/
+/documents/view/
+/documents/attachment/
+
+
+// Routes สำหรับ Student ที่อาจต้องเพิ่ม
+router.get('/profile', ensureAuthenticated, ensureStudent, studentController.getProfile);
+router.post('/profile', ensureAuthenticated, ensureStudent, validateProfile, studentController.updateProfile);
+router.get('/select-document', ensureAuthenticated, ensureStudent, studentController.getSelectDocument);
+router.get('/request-form/:type', ensureAuthenticated, ensureStudent, studentController.getRequestForm);
+router.post('/submit-request', ensureAuthenticated, ensureStudent, upload.array('attachments'), validateDocumentRequest, studentController.submitRequest);
+router.get('/document-history', ensureAuthenticated, ensureStudent, studentController.getDocumentHistory);
+router.get('/track-status', ensureAuthenticated, ensureStudent, studentController.getTrackStatus);
+router.get('/payment/:reference', ensureAuthenticated, ensureStudent, studentController.getPaymentPage);
+router.post('/payment/:reference', ensureAuthenticated, ensureStudent, upload.single('paymentSlip'), validatePayment, studentController.submitPayment);
+router.post('/cancel-request/:id', ensureAuthenticated, ensureStudent, validateCancellation, studentController.cancelRequest);
+router.get('/duplicate-request/:id', ensureAuthenticated, ensureStudent, studentController.duplicateRequest);
+
+// Routes สำหรับ Admin ที่อาจต้องเพิ่ม
+router.get('/profile', ensureAuthenticated, ensureStaff, adminController.getProfile);
+router.post('/profile', ensureAuthenticated, ensureStaff, validateProfile, adminController.updateProfile);
+router.get('/students', ensureAuthenticated, ensureStaff, adminController.getStudents);
+router.get('/student/:id', ensureAuthenticated, ensureStaff, adminController.getStudentDetails);
+router.post('/student/:id', ensureAuthenticated, ensureStaff, validateProfile, adminController.updateStudent);
+// ... และอื่นๆ
