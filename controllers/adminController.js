@@ -276,13 +276,20 @@ exports.changePassword = async (req, res) => {
  */
 exports.getDashboard = async (req, res) => {
   try {
+      // แก้ไขส่วนนี้
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
     // ดึงจำนวนคำขอตามสถานะ
     const pendingCount = await Request.count({ status: 'pending' });
     const processingCount = await Request.count({ status: 'processing' });
     const readyCount = await Request.count({ status: 'ready_for_pickup' });
     const verificationCount = await Request.count({ status: 'awaiting_verification' });
+    
+    
+    // แก้ไขส่วนนี้ - ใช้วันที่ในรูปแบบที่ถูกต้อง
     const todayCount = await Request.count({ 
-      startDate: new Date().setHours(0, 0, 0, 0) 
+      startDate: today
     });
 
     // ดึงคำขอล่าสุด 10 รายการ
