@@ -747,7 +747,8 @@ exports.updateStudent = async (req, res) => {
     req.flash('error_msg', 'เกิดข้อผิดพลาดในการอัพเดทข้อมูลนักศึกษา');
     res.redirect(`/admin/student/${req.params.id}`);
   }
-};ดิจิทัล
+};
+//ดิจิทัล
     const attachmentData = {
       fileName: req.file.filename,
       filePath: req.file.path,
