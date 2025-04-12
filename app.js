@@ -78,8 +78,7 @@ app.use((req, res, next) => {
 });
 
 // เส้นทาง (Routes)
-//app.use('/', require('./routes/auth'));
-app.use('/auth', require('./routes/auth'));
+app.use('/', require('./routes/auth'));
 
 app.use('/student', require('./routes/student'));
 app.use('/admin', require('./routes/admin'));
