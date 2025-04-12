@@ -49,7 +49,7 @@ exports.getDashboard = async (req, res) => {
     res.render('admin/dashboard', {
       title: 'แดชบอร์ดเจ้าหน้าที่ - ระบบขอเอกสารออนไลน์',
       user: req.user,
-      currentPath: '/admin/dashboard'
+      currentPath: '/admin/dashboard',
       counts: {
         pending: pendingCount,
         processing: processingCount,
