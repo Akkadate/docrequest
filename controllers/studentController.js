@@ -25,13 +25,26 @@ const { logger } = require('../utils/logger');
 
 /**
  * แสดงหน้าเมนูหลักนักศึกษา
- */
+
 exports.getMainMenu = (req, res) => {
   res.render('main-menu', {
     title: 'เมนูหลัก - ระบบขอเอกสารออนไลน์',
     user: req.user
   });
 };
+ */
+
+// In controllers/studentController.js
+exports.getMainMenu = (req, res) => {
+  res.render('main-menu', {
+    title: 'เมนูหลัก - ระบบขอเอกสารออนไลน์',
+    user: req.user,
+    currentPath: '/student/main-menu'
+  });
+};
+
+//--------------------------------- test
+
 
 /**
  * แสดงหน้าเลือกประเภทเอกสาร
