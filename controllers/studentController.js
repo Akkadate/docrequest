@@ -419,7 +419,8 @@ exports.submitPayment = async (req, res) => {
 exports.getProfile = (req, res) => {
   res.render('profile', {
     title: 'โปรไฟล์นักศึกษา - ระบบขอเอกสารออนไลน์',
-    user: req.user
+    user: req.user,
+     currentPath: '/student/profile'
   });
 };
 
