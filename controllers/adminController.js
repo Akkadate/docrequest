@@ -290,7 +290,11 @@ exports.getDashboard = async (req, res) => {
       WHERE DATE(created_at) = CURRENT_DATE
     `;
     const todayResult = await db.query(todayQuery);
-    const todayCount = parseInt(todayResult.rows[0].count);
+    
+  //  const todayCount = parseInt(todayResult.rows[0].count);
+
+    const todayISODate = new Date().toISOString().split('T')[0]; // 'YYYY-MM-DD'
+    const todayCount = await Request.countByDate(todayISODate);
     
     // ดึงคำขอล่าสุด 10 รายการ
     const latestRequests = await Request.findAll({ limit: 10 });
