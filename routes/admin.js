@@ -19,7 +19,7 @@ const {
 const { logger } = require('../utils/logger');
 
 // ในไฟล์ routes/admin.js ---------------------------------
-const { ensureAuthenticated, ensureStaff } = require('../middleware/auth');
+
 const adminController = require('../controllers/adminController');
 
 // เพิ่ม redirect จาก /admin ไป /admin/dashboard
