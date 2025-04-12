@@ -284,12 +284,6 @@ exports.getDashboard = async (req, res) => {
     const todayCount = await Request.count({ 
       startDate: new Date().setHours(0, 0, 0, 0) 
     });
-  } catch (error) {
-    logger.error(`Error generating reports: ${error.message}`);
-    req.flash('error_msg', 'เกิดข้อผิดพลาดในการสร้างรายงาน');
-    res.redirect('/admin/dashboard');
-  }
-};
     
     // ดึงคำขอล่าสุด 10 รายการ
     const latestRequests = await Request.findAll({ limit: 10 });
