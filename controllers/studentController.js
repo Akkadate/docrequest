@@ -47,12 +47,12 @@ exports.getMainMenu = (req, res) => {
 
 
 /**
- * แสดงหน้าเลือกประเภทเอกสาร
+ * แสดงหน้าเลือกประเภทเอกสาร----
  */
 exports.getSelectDocument = (req, res) => {
   res.render('select-document', {
     title: 'เลือกประเภทเอกสาร - ระบบขอเอกสารออนไลน์',
-    user: req.user
+    user: req.user,
     currentPath: '/student/select-document'
   });
 };
