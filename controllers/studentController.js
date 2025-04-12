@@ -53,6 +53,7 @@ exports.getSelectDocument = (req, res) => {
   res.render('select-document', {
     title: 'เลือกประเภทเอกสาร - ระบบขอเอกสารออนไลน์',
     user: req.user
+    currentPath: '/student/select-document'
   });
 };
 
