@@ -421,6 +421,21 @@ class Request {
       throw error;
     }
   }
+
+  static async countByDate(date) {
+  try {
+    const query = `
+      SELECT COUNT(*) as count 
+      FROM document_requests 
+      WHERE DATE(created_at) = $1
+    `;
+    const result = await db.query(query, [date]);
+    return parseInt(result.rows[0].count);
+  } catch (error) {
+    logger.error(`Error counting requests by date: ${error.message}`);
+    throw error;
+  }
+}
   
   /**
    * นับจำนวนคำขอตามเงื่อนไข
@@ -463,12 +478,15 @@ class Request {
 
           // แก้ไขส่วนนี้ - จัดการกับวันที่อย่างถูกต้อง
     if (filters.startDate) {
-      // แปลงจาก JavaScript Date เป็นรูปแบบที่ PostgreSQL เข้าใจ
-      const date = new Date(filters.startDate);
-      const pgDate = date.toISOString().split('T')[0]; // 'YYYY-MM-DD'
+      // แทนที่จะใช้ค่า startDate โดยตรง ให้แปลงเป็นวันที่ที่ PostgreSQL เข้าใจ
+      const dateObj = new Date(filters.startDate);
+      const formattedDate = dateObj.toISOString().split('T')[0]; // 'YYYY-MM-DD'
       
-      query += ' AND DATE(created_at) >= $' + (queryParams.length + 1);
-      queryParams.push(pgDate);
+      query += ' AND DATE(created_at) = $' + (queryParams.length + 1);
+      queryParams.push(formattedDate);
+
+      const result = await db.query(query, queryParams);
+      return parseInt(result.rows[0].count);
     }
     
       
