@@ -455,10 +455,22 @@ class Request {
         queryParams.push(filters.paymentStatus);
       }
       
-      if (filters.startDate) {
-        whereClauses.push(`r.created_at >= $${paramIndex++}`);
-        queryParams.push(filters.startDate);
-      }
+  //    if (filters.startDate) {
+  //      whereClauses.push(`r.created_at >= $${paramIndex++}`);
+ //       queryParams.push(filters.startDate);
+//      }
+
+
+          // แก้ไขส่วนนี้ - จัดการกับวันที่อย่างถูกต้อง
+    if (filters.startDate) {
+      // แปลงจาก JavaScript Date เป็นรูปแบบที่ PostgreSQL เข้าใจ
+      const date = new Date(filters.startDate);
+      const pgDate = date.toISOString().split('T')[0]; // 'YYYY-MM-DD'
+      
+      query += ' AND DATE(created_at) >= $' + (queryParams.length + 1);
+      queryParams.push(pgDate);
+    }
+    
       
       if (filters.endDate) {
         whereClauses.push(`r.created_at <= $${paramIndex++}`);
