@@ -7,8 +7,7 @@ const { forwardAuthenticated, ensureAuthenticated } = require('../middleware/aut
 const { validateLogin, validateAdminLogin, validateRegister, validatePasswordChange } = require('../middleware/validation');
 
 // หน้าเข้าสู่ระบบนักศึกษา
-//router.get('/login', forwardAuthenticated, authController.getLoginPage);
-router.get('/auth/login', forwardAuthenticated, authController.getLoginPage);
+router.get('/login', forwardAuthenticated, authController.getLoginPage);
 
 // หน้าเข้าสู่ระบบเจ้าหน้าที่
 router.get('/admin/login', forwardAuthenticated, authController.getAdminLoginPage);
