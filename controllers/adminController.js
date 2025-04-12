@@ -276,9 +276,6 @@ exports.changePassword = async (req, res) => {
  */
 exports.getDashboard = async (req, res) => {
   try {
-      // แก้ไขส่วนนี้
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
     
     // ดึงจำนวนคำขอตามสถานะ
     const pendingCount = await Request.count({ status: 'pending' });
@@ -287,10 +284,14 @@ exports.getDashboard = async (req, res) => {
     const verificationCount = await Request.count({ status: 'awaiting_verification' });
     
     
-    // แก้ไขส่วนนี้ - ใช้วันที่ในรูปแบบที่ถูกต้อง
-    const todayCount = await Request.count({ 
-      startDate: today
-    });
+ // เปลี่ยนวิธีการนับคำขอในวันนี้โดยใช้ SQL โดยตรง
+    const todayQuery = `
+      SELECT COUNT(*) as count
+      FROM document_requests
+      WHERE DATE(created_at) = CURRENT_DATE
+    `;
+    const todayResult = await db.query(todayQuery);
+    const todayCount = parseInt(todayResult.rows[0].count);
 
     // ดึงคำขอล่าสุด 10 รายการ
     const latestRequests = await Request.findAll({ limit: 10 });
