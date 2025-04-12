@@ -79,7 +79,8 @@ exports.getRequestForm = (req, res) => {
     title: `ขอ${documentTypes[documentType]} - ระบบขอเอกสารออนไลน์`,
     user: req.user,
     documentType: documentType,
-    documentTypeThai: documentTypes[documentType]
+    documentTypeThai: documentTypes[documentType],
+    currentPath: '/student/request-form/:type'
   });
 };
 
